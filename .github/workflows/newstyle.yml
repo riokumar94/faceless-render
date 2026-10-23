@@ -25,18 +25,18 @@ jobs:
       - name: tooltest
         if: inputs.task == 'tooltest'
         run: |
-          mkdir -p out && cd tooltest
+          mkdir -p $GITHUB_WORKSPACE/out && cd tooltest && pwd && ls
           python3 -m pip install -q manim playwright && python3 -m playwright install --with-deps chromium >/dev/null
           sed -i "s#executable_path='/usr/bin/google-chrome',##" h.py
-          T(){ n=$1;shift; /usr/bin/time -f "$n wall=%e s maxRSS=%M KB" "$@" >/dev/null 2>>../out/times.txt || echo "$n FAILED" >> ../out/times.txt; }
+          T(){ n=$1;shift; /usr/bin/time -f "$n wall=%e s maxRSS=%M KB" "$@" >/dev/null 2>>$GITHUB_WORKSPACE/out/times.txt || echo "$n FAILED" >> $GITHUB_WORKSPACE/out/times.txt; }
           T ffmpeg ffmpeg -v error -y -f lavfi -i "color=c=0xf3ead7:s=1080x1920:r=30" -vf "drawtext=fontfile=$HOME/.fonts/Kalam-Bold.ttf:text='%{n}':fontsize=200:x=(w-tw)/2:y=h/2+200*sin(t)" -t 5 -c:v libx264 -crf 18 -pix_fmt yuv420p ff5s.mp4
           T cairo python3 c.py
           T manim python3 -m manim -qh --disable_caching -o manim5s.mp4 --media_dir mm m.py T
           T playwright python3 h.py
           mkdir -p /tmp/rt/src && cp remotion_index.jsx /tmp/rt/src/index.jsx && cd /tmp/rt && echo '{"name":"rt","private":true}' > package.json && npm i -s remotion@4 @remotion/cli@4 react@18 react-dom@18 >/dev/null 2>&1
           cd /tmp/rt && T remotion npx remotion render src/index.jsx T $GITHUB_WORKSPACE/tooltest/remotion5s.mp4 --concurrency=2
-          cd $GITHUB_WORKSPACE/tooltest && for f in ff5s.mp4 cairo5s.mp4 html5s.mp4 remotion5s.mp4 $(find mm -name manim5s.mp4); do echo "$f $(ffprobe -v error -select_streams v -show_entries stream=width,height,nb_frames -of csv=p=0 $f)" >> ../out/times.txt; cp $f ../out/ ; done
-          nproc >> ../out/times.txt; cat ../out/times.txt
+          cd $GITHUB_WORKSPACE/tooltest && for f in ff5s.mp4 cairo5s.mp4 html5s.mp4 remotion5s.mp4 $(find mm -name manim5s.mp4); do echo "$f $(ffprobe -v error -select_streams v -show_entries stream=width,height,nb_frames -of csv=p=0 $f)" >> $GITHUB_WORKSPACE/out/times.txt; cp $f $GITHUB_WORKSPACE/out/ ; done
+          nproc >> $GITHUB_WORKSPACE/out/times.txt; cat $GITHUB_WORKSPACE/out/times.txt
       - name: pilot
         if: inputs.task == 'pilot'
         run: |

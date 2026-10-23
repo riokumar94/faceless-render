@@ -392,7 +392,7 @@ def g_words(im,d,u,t,words=(),sub=''):
 def _sg(u,a,b):return min(max((u-a)/max(b-a,1e-6),0),1)
 def g_count(im,d,u,t,a=0.0,b=100.0,fmt='{:,.0f}',label='',unit=''):
     d=_gbg(im,t,_dk(CY,0.25),_dk(C['bg'],1.0));k=ease(_sg(u,0.02,0.35))
-    v=fmt.format(a+(b-a)*k);s=v+unit;f=F(170)
+    s=_cfmt(a,b,k,fmt,unit) or '';f=F(170)
     while d.textlength(s,font=f)>980:f=F(f.size-10)
     w=d.textlength(s,font=f);d.text(((W-w)/2,500),s,font=f,fill=WH,stroke_width=8,stroke_fill=INK)
     d.rounded_rectangle([120,800,960,880],30,outline=WH,width=6);d.rounded_rectangle([130,810,130+820*k,870],24,fill=CY)
@@ -532,9 +532,16 @@ def label(d,s,y,u,size=84,fill=None,box=None,maxw=900,maxl=3):
         if box:d.rounded_rectangle([(W-w)/2-24,yy-10,(W+w)/2+24,yy+f.size+14],18,fill=box)
         d.text(((W-w)/2,yy),l,font=f,fill=fill or (INK if box else WH),stroke_width=0 if box else 5,stroke_fill=INK)
     return y+len(L)*lh
+def _cfmt(a,b,k,fmt,unit,pre=''):
+    if abs(b-a)<=2:k=1   # tiny ranges (0->1 nit) show the final value only, no '0 nit' flash
+    if a==0 and k<0.18:return None   # never flash a zero ('0p'); number appears once counting is under way
+    if unit and unit[0].isalpha() and len(unit)>1:unit=' '+unit   # '60 shows', never '60shows'
+    return pre+fmt.format(a+(b-a)*k)+unit
 def _cnt(d,u,a,b,fmt,unit,y,size=170,pre=''):
     k=ease(_sg(u,0.02,0.35))   # holds the final value from 35% of the shot
-    s=pre+fmt.format(a+(b-a)*k)+unit;f=F(size)
+    s=_cfmt(a,b,k,fmt,unit,pre)
+    if s is None:return
+    f=F(size)
     while d.textlength(s,font=f)>960:f=F(f.size-8)
     w=d.textlength(s,font=f);d.text(((W-w)/2,y),s,font=f,fill=WH,stroke_width=8,stroke_fill=INK)
 def g_prop(im,d,u,t,props=('📦',),anim='pop',label_='',count=None,sub='',tag='',pose=None,size=300,bgk=0,y=640):
@@ -637,18 +644,22 @@ CUTS=[s[0] for s in SHOTS[1:]];NSH=len(SHOTS)
 groups=[];cur=[]
 for k,c in enumerate(caps):
     cur.append(c)
-    if len(cur)==4 or k+1==len(caps) or c[0][-1] in '.,:;!?"':groups.append(cur);cur=[]
+    FW={'a','an','the','of','to','and','or','in','on','at','for','by','with','from','as','is','its','it\'s','their','your','my','our','this','that','than','but','so','into','onto'}
+    if k+1==len(caps) or c[0][-1] in '.,:;!?"' or (len(cur)>=4 and norm(c[0]) not in FW) or len(cur)>=6:groups.append(cur);cur=[]
 def draw_caps(im,t):
     c=[c for c in groups if c[0][1]-0.05<=t<=c[-1][2]+0.2]
     if not c:return
     c=c[-1];d=ImageDraw.Draw(im);txt=[w[0].strip('"') for w in c];f=F(70)
-    lines=[list(zip(txt,c))] if d.textlength(' '.join(txt),font=f)<920 else [list(zip(txt[:2],c[:2])),list(zip(txt[2:],c[2:]))]
+    lines=[list(zip(txt,c))] if d.textlength(' '.join(txt),font=f)<920 else [list(zip(txt[:(len(txt)+1)//2],c[:(len(txt)+1)//2])),list(zip(txt[(len(txt)+1)//2:],c[(len(txt)+1)//2:]))]
     y=1460;bw=max(d.textlength(' '.join(a for a,_ in l),font=f) for l in lines)
     d.rounded_rectangle([(W-bw)/2-30,y-20,(W+bw)/2+30,y+len(lines)*88+10],22,fill=C['bg'])
     for ln in lines:
         x=(W-d.textlength(' '.join(a for a,_ in ln),font=f))/2
         for a,w in ln:d.text((x,y),a,font=f,fill=CY if w[1]<=t+0.02 else (245,245,245));x+=d.textlength(a+' ',font=f)
         y+=88
+def disclose(im):
+    d=ImageDraw.Draw(im);s='Contains AI-generated voice';f=F(30);w=d.textlength(s,font=f)
+    d.rounded_rectangle([(W-w)/2-14,H-74,(W+w)/2+14,H-30],12,fill=(0,0,0));d.text(((W-w)/2,H-70),s,font=f,fill=(235,235,235))
 def hook(im,t):
     d=ImageDraw.Draw(im);k=ease(t*4)*(1-ease((t-1.9)*4));
     if k<=0:return
@@ -680,7 +691,7 @@ FRS=[int((a+b)/2*FPS) for a,b,_ in SHOTS] if TEST else range(int(DUR*FPS))
 for fr in FRS:
     t=fr/FPS;si=max(i for i,s in enumerate(SHOTS) if s[0]<=t+1e-9);a,b,fn=SHOTS[si]
     if True:
-        im=Image.new('RGB',(W,H));u=(t-a)/(b-a);fn(im,ImageDraw.Draw(im),u,t);hook(im,t);draw_caps(im,t) if t<TEND else None
+        im=Image.new('RGB',(W,H));u=(t-a)/(b-a);fn(im,ImageDraw.Draw(im),u,t);hook(im,t);draw_caps(im,t) if t<TEND else None;disclose(im)
     if si>0 and t-a<XF and prev is not None: im=Image.blend(prev,im,(t-a)/XF)  # 4-frame dissolve
     if not TEST and abs(t-(a+b)/2)<0.5/FPS:thumbs.append(im.resize((270,480)))
     if t-a>=XF:prev=None

@@ -522,6 +522,7 @@ def g_prices(im,d,u,t,a='£120',b='£180',label=''):
     if label:_lab(d,label,1450,_sg(u,0.7,0.95),70)
 
 import props_lib as PLB
+paste=PLB.paste
 def label(d,s,y,u,size=84,fill=None,box=None,maxw=900,maxl=3):
     """full phrase, wrapped to <=3 lines, pops in; never truncated"""
     if not s or u<=0:return y

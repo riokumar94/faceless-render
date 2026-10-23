@@ -18,6 +18,15 @@ def env_floor(c,y,col,t,seed):
     c.line_to(W,H); c.line_to(0,H); c.close_path(); wash(c,col,0.55,keep=False)
     for k in range(40):
         x=random.uniform(0,W); yy=y+random.uniform(20,500); c.move_to(x,yy); c.line_to(x+random.uniform(8,22),yy-random.uniform(4,12)); ink(c,1,2.5,mix(INK,col,0.5),0.6)
+    for k in range(14):  # leaf litter + pebbles
+        x=random.uniform(0,W); yy=y+random.uniform(30,420); r=random.uniform(9,18)
+        if k%2: ell(c,x,yy,r*1.6,r*0.6,random.uniform(-1,1)); wash(c,mix(col,(0.75,0.45,0.2),0.6),0.7); ink(c,1,2.5,INK,0.5)
+        else: ell(c,x,yy,r,r*0.7); wash(c,mix(col,(0.6,0.6,0.62),0.6),0.8); ink(c,1,2.5,INK,0.5)
+    for k in range(5):   # fern fronds on the ground line
+        x=random.uniform(20,W-20); sw=0.06*math.sin(t*1.5+k)
+        for j in range(-3,4):
+            a=-math.pi/2+j*0.28+sw; L=random.uniform(50,95); c.move_to(x,y+6); c.curve_to(x+math.cos(a)*L*0.5,y+math.sin(a)*L*0.6,x+math.cos(a)*L,y+math.sin(a)*L,x+math.cos(a)*L*1.15+j*6,y+math.sin(a)*L*0.95)
+        ink(c,1,3,mix((0.25,0.45,0.25),col,0.3),0.85)
 def cam(c,t,s0,s1,z0=1.0,z1=1.07,ox=W/2,oy=H*0.42,dx=0,dy=0):
     u=ease((t-s0)/max(0.01,s1-s0)); z=lerp(z0,z1,u); c.translate(ox+dx*u,oy+dy*u); c.scale(z,z); c.translate(-ox,-oy)
 def label(c,s,x,y,size,t,a0,col=INK,d=0.35,outline=CREAM,ow=12):
@@ -83,15 +92,15 @@ def s_track(c,t,s0,s1):
     rrect(c,1650,1180,520,80,40); wash(c,(0.5,0.36,0.22),0.7); ink(c,1,7)
     for k in range(4): c.move_to(1700+k*110,1200); c.curve_to(1740+k*110,1215,1760+k*110,1235,1790+k*110,1240); ink(c,1,3)
     c.restore()
-    lyrebird(c,1900-1300*u,1060,1.3,pr(t,w(2,7)-0.2,0.6),fan=0.05,tilt=0.15*math.sin(t*3))
+    lyrebird(c,1900-1300*u,1060,1.6,pr(t,w(2,7)-0.2,0.6),fan=0.05,tilt=0.15*math.sin(t*3))
     env_floor(c,1500,(0.40,0.33,0.20),t,3)
     label(c,"follow the sound...",540,420,90,t,s0+0.05,INK)
 @shot(9.85)
 def s_title(c,t,s0,s1):
     paper(c,(0.97,0.90,0.78),(0.88,0.72,0.55),0.25); cam(c,t,s0,s1,1.12,1.0,ox=640,oy=820)
-    lyrebird(c,600,1000,2.4,1,fan=0.1,tilt=-0.25+0.3*pr(t,w(2,9),0.4),beak=0.2)
+    lyrebird(c,680,1000,1.75,1,fan=0.1,tilt=-0.25+0.3*pr(t,w(2,9),0.4),beak=0.2)
     text(c,"SUPERB LYREBIRD",540,380,118,RED,p=pr(t,w(2,9),0.7),outline=CREAM,ow=14)
-    text(c,"Menura novaehollandiae",540,470,60,INK,a=pr(t,w(2,10)+0.2,0.3),bold=False)
+    text(c,"Menura novaehollandiae",540,470,68,INK,a=pr(t,w(2,10)+0.2,0.3),bold=False)
 @shot(11.36)
 def s_pie(c,t,s0,s1):
     paper(c,(0.95,0.93,0.85),(0.85,0.82,0.70)); cam(c,t,s0,s1,1.0,1.05)
@@ -106,7 +115,7 @@ def s_pie(c,t,s0,s1):
     n=int(round(100*(f70+f80))); txt=f"{min(n,70)}" if f80<=0 else f"70–{70+int(round(100*f80))}"
     if f70>0: text(c,txt+"%",540,1330,150,RED,outline=CREAM,ow=14)
     label(c,"BORROWED",540,1450,80,t,w(3,4),INK)
-    lyrebird(c,860,560,0.6,pr(t,s0,0.3),fan=0.0,beak=0.4)
+    lyrebird(c,830,560,0.85,pr(t,s0,0.3),fan=0.0,beak=0.4)
 @shot(13.3)
 def s_species(c,t,s0,s1):
     paper(c,(0.84,0.92,0.92),(0.62,0.78,0.78)); cam(c,t,s0,s1,1.0,1.06,dy=-20)
@@ -129,7 +138,7 @@ def s_question(c,t,s0,s1):
     rrect(c,180,1150,620,80,40); wash(c,(0.5,0.36,0.22),0.7); ink(c,1,7)
     env_floor(c,1500,(0.45,0.36,0.30),t,5)
     hop=pr(t,s0+1.2,0.5); yb=lerp(1030,1360,hop)-math.sin(hop*math.pi)*200; xb=lerp(460,620,hop)
-    lyrebird(c,xb,yb,1.3,1,fan=0.05,tilt=0.35*math.sin(t*4))
+    lyrebird(c,xb,yb,1.6,1,fan=0.05,tilt=0.35*math.sin(t*4))
     c.move_to(470,520); c.curve_to(470,380,700,380,700,500); c.curve_to(700,600,590,600,590,700); c.line_to(590,760)
     ink(c,pr(t,s0+0.05,0.8),26,(0.55,0.25,0.65)); circle(c,590,840,18); wash(c,(0.55,0.25,0.65),pr(t,s0+0.8,0.1),keep=False)
 @shot(17.92)
@@ -139,7 +148,7 @@ def s_impress(c,t,s0,s1):
     c.move_to(470,0); c.line_to(610,0); c.line_to(900,1450); c.line_to(180,1450); c.close_path()
     g=cairo.LinearGradient(0,0,0,1450); g.add_color_stop_rgba(0,1,0.95,0.7,0.55*a); g.add_color_stop_rgba(1,1,0.95,0.7,0.12*a); c.set_source(g); c.fill()
     ell(c,540,1440,380,60); wash(c,(1,0.9,0.6),0.35*a,keep=False)
-    lyrebird(c,540,1290,1.5,1,fan=0.25*pr(t,w(5,1),0.8),beak=0.3)
+    lyrebird(c,540,1290,1.8,1,fan=0.25*pr(t,w(5,1),0.8),beak=0.3)
     random.seed(3)
     for k in range(14):
         sx=random.uniform(150,930); sy=random.uniform(300,1300); tw=0.5+0.5*math.sin(t*8+k)
@@ -149,7 +158,7 @@ def s_impress(c,t,s0,s1):
 @shot(20.2)
 def s_tape(c,t,s0,s1):
     paper(c,(0.96,0.94,0.80),(0.90,0.84,0.62)); cam(c,t,s0,s1,1.0,1.04,dx=-20)
-    lyrebird(c,640,1000,1.15,1,fan=0.0)
+    lyrebird(c,640,1000,1.45,1,fan=0.0)
     u=eout((t-w(5,10))/0.9); x0,x1=170,170+760*u
     rrect(c,90,1260,120,120,30); wash(c,(0.95,0.75,0.15),0.9); ink(c,1,6)
     if u>0:
@@ -185,7 +194,7 @@ def s_scrape(c,t,s0,s1):
     c.move_to(160,1380); c.curve_to(300,1380-260*g,600,1380-260*g,760,1380); c.close_path(); wash(c,(0.48,0.34,0.20),0.85); ink(c,1,7)
     env_floor(c,1380,(0.40,0.30,0.18),t,8)
     kick=math.sin(t*14)
-    lyrebird(c,820,1240,1.0,1,fan=0.0,tilt=0.4)
+    lyrebird(c,820,1240,1.4,1,fan=0.0,tilt=0.4)
     random.seed(int(t*30))
     for k in range(18):
         ph=((t*2.2+k/18)%1); x=780-ph*420; y=1370-math.sin(ph*math.pi)*(240+k*6)
@@ -213,16 +222,16 @@ def s_stage(c,t,s0,s1):
     c.restore()
     env_floor(c,1420,(0.36,0.30,0.22),t,9)
     xb=540+0*hop; yb=1220-math.sin(hop*math.pi)*260
-    lyrebird(c,xb,yb,1.25,1,fan=0.9+0.1*math.sin(t*6),beak=0.4)
+    lyrebird(c,xb,yb,1.5,1,fan=0.9+0.1*math.sin(t*6),beak=0.4)
     label(c,"one stage after another",540,400,84,t,w(7,13),(1,0.95,0.85),outline=(0.2,0.12,0.2))
 @shot(31.85)
 def s_female(c,t,s0,s1):
     paper(c,(0.93,0.90,0.85),(0.85,0.80,0.72)); cam(c,t,s0,s1,1.0,1.04)
     c.save(); c.rectangle(0,0,W/2-6,H); c.clip(); c.set_source_rgba(0.3,0.25,0.35,0.35); c.paint()
-    lyrebird(c,300,1000,0.9,1,fan=1.0,fill=0.3); text(c,"him: the show",270,560,62,INK); c.restore()
+    lyrebird(c,300,1000,1.15,1,fan=1.0,fill=0.3); text(c,"him: the show",270,560,68,INK); c.restore()
     c.move_to(W/2,200); c.line_to(W/2,1500); ink(c,pr(t,s0,0.3),6)
-    nest(c,800,1150,1.0,1); lyrebird(c,780,1040,0.85,pr(t,s0,0.5),female=True)
-    text(c,"her: simple",800,560,62,RED,a=pr(t,w(8,2),0.2))
+    nest(c,800,1150,1.0,1); lyrebird(c,780,1040,1.1,pr(t,s0,0.5),female=True)
+    text(c,"her: simple",800,560,68,RED,a=pr(t,w(8,2),0.2))
 @shot(33.7)
 def s_egg(c,t,s0,s1):
     paper(c,(0.82,0.88,0.96),(0.55,0.65,0.82)); cam(c,t,s0,s1,1.0,1.1,oy=1000)
@@ -258,8 +267,8 @@ def s_timeline(c,t,s0,s1):
     labs=[(0,"today"),(1,"1 million yrs"),(2,"5 million"),(3,"10 million")]
     for k,s in labs:
         x=900-k*600+off
-        if 60<x<1040: text(c,s,x,1000,60,INK,bold=False)
-    lyrebird(c,860,760,0.5,1,fan=0.0)
+        if 60<x<1040: text(c,s,x,1000,68,INK,bold=False)
+    lyrebird(c,860,760,0.75,1,fan=0.0)
     stamp(c,"OLD.",540,560,170,t,w(10,3),RUST)
 @shot(39.0)
 def s_strata(c,t,s0,s1):
@@ -273,11 +282,20 @@ def s_strata(c,t,s0,s1):
         c.line_to(W*u,y+190); c.line_to(0,y+190); c.close_path(); wash(c,col,0.9); ink(c,1,4)
     g=pr(t,w(10,8),0.4)
     if g>0:
-        c.save(); c.translate(560,1400); c.rotate(-0.5)
-        c.move_to(0,0); c.curve_to(60,-80,40,-200,-10,-260); ink(c,1,6,(0.98,0.9,0.6),g)
-        for k in range(10): c.move_to(10+k*1,-20-k*24); c.line_to(60-k*3,-40-k*24); c.move_to(5+k,-20-k*24); c.line_to(-40+k*2,-30-k*24); ink(c,1,3,(0.98,0.9,0.6),g)
+        r=cairo.RadialGradient(520,1250,10,520,1250,330); r.add_color_stop_rgba(0,1,0.92,0.6,0.55*g); r.add_color_stop_rgba(1,1,0.9,0.5,0); c.set_source(r); c.paint()
+        c.save(); c.translate(520,1250); c.scale(1.5,1.5); c.rotate(-0.2)
+        BONE=(0.97,0.92,0.78)
+        def bone(w=7): c.save(); ink(c,g,w+5,INK,0.9,keep=True); c.restore(); ink(c,g,w,BONE)
+        c.move_to(-120,20)
+        for k in range(9): c.line_to(-120+k*24,20-6*math.sin(k*0.5))
+        bone(8)
+        for k in range(6): c.move_to(-60+k*16,18); c.curve_to(-70+k*16,60,-50+k*16,80,-40+k*16,86); bone(4)
+        circle(c,105,-10,26); bone(6); c.move_to(128,-12); c.line_to(170,-4); c.line_to(130,2); bone(5)
+        circle(c,110,-14,5); c.set_source_rgba(*INK,g); c.fill()
+        for k in range(7): a2=math.radians(160+k*9); c.move_to(-120,20); c.line_to(-120+180*math.cos(a2),20+180*math.sin(a2)); bone(4)
+        c.move_to(-20,30); c.line_to(-30,110); c.line_to(-5,140); c.move_to(10,30); c.line_to(5,110); c.line_to(30,140); bone(5)
+        c.move_to(-40,10); c.curve_to(0,-60,60,-60,90,-30); bone(5)
         c.restore()
-        r=cairo.RadialGradient(560,1300,10,560,1300,260); r.add_color_stop_rgba(0,1,0.9,0.5,0.5*g); r.add_color_stop_rgba(1,1,0.9,0.5,0); c.set_source(r); c.paint()
     c.move_to(860,420); c.line_to(860,1450); ink(c,pr(t,w(10,7),0.5),6,RED)
     label(c,"≈15 million years",540,330,96,t,w(10,8),RED)
 @shot(41.8)
@@ -342,7 +360,7 @@ def s_reel(c,t,s0,s1):
         circle(c,0,0,22); wash(c,CREAM,1,keep=False); c.restore()
     c.move_to(330,860); c.line_to(750,860); ink(c,1,8,(0.4,0.25,0.15))
     # mic + bird left, wave travels into the tape
-    lyrebird(c,220,1260,0.75,1,fan=0.1,beak=0.7)
+    lyrebird(c,220,1260,1.05,1,fan=0.1,beak=0.7)
     rrect(c,480,1120,60,130,30); wash(c,(0.3,0.3,0.32),0.9); ink(c,1,5); c.move_to(510,1250); c.line_to(510,1350); ink(c,1,6)
     wave(c,320,1020,1180,70,'saw',phase=t*2,p=pr(t,w(13,4),0.8)); ink(c,1,7,RED)
     label(c,"recording: chainsaw (by a bird)",540,380,70,t,w(13,7),INK)
@@ -355,8 +373,8 @@ def s_drawer(c,t,s0,s1):
         rrect(c,240,340+k*370,600,330,14); wash(c,(0.55,0.60,0.58),0.9); ink(c,1,5)
     op=1-pr(t,w(13,13)+0.1,0.5); dy=0
     c.save(); c.translate(0,0); rrect(c,240-80*op,710,600+160*op,330,14); wash(c,(0.62,0.67,0.64),0.95); ink(c,1,6)
-    rrect(c,380-80*op*0.5,770,320,110,10); wash(c,CREAM,1); ink(c,1,4)
-    text(c,"NATIONAL",540-40*op,815,40,INK,p=pr(t,w(13,11),0.4)); text(c,"SOUND ARCHIVE · 2013",540-40*op,860,34,INK,p=pr(t,w(13,12),0.6))
+    rrect(c,250-80*op*0.5,745,580,170,12); wash(c,CREAM,1); ink(c,1,4)
+    text(c,"NATIONAL SOUND",540-40*op,815,66,INK,p=pr(t,w(13,11),0.4)); text(c,"ARCHIVE · 2013",540-40*op,880,64,INK,p=pr(t,w(13,12),0.6))
     c.restore()
     u=eout((t-(w(13,10)))/0.5)
     if op>0.2:
@@ -366,17 +384,17 @@ def s_drawer(c,t,s0,s1):
 def s_case(c,t,s0,s1):
     paper(c,(0.94,0.90,0.80),(0.82,0.74,0.60)); cam(c,t,s0,s1,1.08,1.0)
     rrect(c,240,1300,600,90,10); wash(c,(0.45,0.30,0.20),0.95); ink(c,1,6)
-    lyrebird(c,560,1080,1.15,1,fan=0.2)
+    lyrebird(c,560,1080,1.45,1,fan=0.2)
     gl=pr(t,w(14,2)-0.2,0.6)
     c.move_to(280,1300); c.line_to(280,560); c.curve_to(280,330,800,330,800,560); c.line_to(800,1300); ink(c,gl,6,(0.6,0.8,0.9)); 
     if gl>0.9:
         c.move_to(330,600); c.curve_to(330,460,420,420,480,410); ink(c,1,10,(1,1,1),0.6)
-    rrect(c,380,1400,320,90,10); wash(c,(0.85,0.70,0.30),0.95*pr(t,w(14,3),0.2)); ink(c,pr(t,w(14,3),0.3),4)
-    text(c,"preserved",540,1462,52,INK,p=pr(t,w(14,3),0.4))
+    rrect(c,330,1395,420,100,12); wash(c,(0.85,0.70,0.30),0.95*pr(t,w(14,3),0.2)); ink(c,pr(t,w(14,3),0.3),4)
+    text(c,"preserved",540,1462,72,INK,p=pr(t,w(14,3),0.4))
 @shot(56.4)
 def s_machine(c,t,s0,s1):
     paper(c,(0.92,0.84,0.70),(0.80,0.62,0.44)); cam(c,t,s0,s1,1.0,1.07,dx=20)
-    lyrebird(c,300,1000,1.0,1,fan=0.1,beak=0.6+0.4*math.sin(t*16))
+    lyrebird(c,300,1000,1.35,1,fan=0.1,beak=0.6+0.4*math.sin(t*16))
     chainsaw(c,770,900,0.85,pr(t,w(14,4),0.5))
     wave(c,440,620,870,50,'saw',phase=t*3,p=1); ink(c,1,7,RED)
     text(c,"=",540,1260,160,INK,a=pr(t,w(14,6),0.2))
@@ -387,8 +405,8 @@ def s_honour(c,t,s0,s1):
     dr=pr(t,w(14,8),1.0)
     c.save(); c.translate(540,700); c.rotate(0.6*dr)
     for k in range(16): a=k*math.pi/8; c.move_to(0,0); c.arc(0,0,150,a,a+0.35); c.close_path(); wash(c,(0.15,0.45,0.75) if k%2 else (0.25,0.55,0.85),0.95,keep=False)
-    circle(c,0,0,105); wash(c,(0.96,0.85,0.4),1); ink(c,1,5)
-    text(c,"honour",0,20,54,INK)
+    circle(c,0,0,120); wash(c,(0.96,0.85,0.4),1); ink(c,1,5)
+    text(c,"honour",0,20,64,INK)
     for sx in (-1,1): poly(c,[(sx*30,120),(sx*90,420+60*dr),(sx*40*1,380+60*dr),(0,120)]); wash(c,(0.2,0.5,0.8),0.95); ink(c,1,4)
     c.restore()
     c.save(); c.translate(0,lerp(0,420,ease(dr))); c.restore()
@@ -398,7 +416,7 @@ def s_peer(c,t,s0,s1):
     paper(c,(0.84,0.84,0.86),(0.62,0.62,0.66)); cam(c,t,s0,s1,1.0,1.08,ox=400)
     rrect(c,620,600,420,900,16); wash(c,(0.45,0.50,0.48),0.9); ink(c,1,6)
     rrect(c,650,880,360,200,10); wash(c,(0.62,0.67,0.64),0.95); ink(c,1,5); text(c,"2013",830,1000,64,INK)
-    lyrebird(c,330,1200,1.1,1,fan=0.0,droop=pr(t,w(14,11),0.8),tilt=0.25)
+    lyrebird(c,330,1200,1.45,1,fan=0.0,droop=pr(t,w(14,11),0.8),tilt=0.25)
     label(c,"...auditioned for",400,420,84,t,w(14,12),INK)
 @shot(61.5)
 def s_rewind(c,t,s0,s1):
@@ -427,7 +445,7 @@ def s_colour(c,t,s0,s1):
 @shot(67.4)
 def s_voices(c,t,s0,s1):
     paper(c,(0.92,0.88,0.96),(0.74,0.66,0.86)); cam(c,t,s0,s1,1.0,1.06)
-    lyrebird(c,300,1150,1.0,1,fan=0.3,beak=0.7+0.3*math.sin(t*14))
+    lyrebird(c,300,1150,1.35,1,fan=0.3,beak=0.7+0.3*math.sin(t*14))
     icons=[('car',car),('cam',camera),('saw',chainsaw),('bird',None),('bird2',None)]
     for k,(nm,fn) in enumerate(icons):
         a=s0+0.3*k; u=eout((t-a)/0.6)
@@ -436,7 +454,7 @@ def s_voices(c,t,s0,s1):
         rrect(c,bx-130,by-80,260,160,40); wash(c,CREAM,0.95); ink(c,1,5)
         c.move_to(bx-100,by+70); c.line_to(420,960); ink(c,1,4,INK,0.5)
         if fn: fn(c,bx,by+10,0.32,1)
-        else: lyrebird(c,bx+10,by+10,0.3,1,fan=0.0,female=True)
+        else: lyrebird(c,bx+10,by+10,0.42,1,fan=0.0,female=True)
     label(c,"everyone else's voice",540,1540,88,t,w(16,9),INK)
 @shot(69.5)
 def s_end(c,t,s0,s1):

@@ -100,6 +100,10 @@ def lyrebird(c,x,y,s=1.0,p=1.0,fan=0.0,nf=16,tilt=0.0,droop=0.0,beak=0.0,col=Tru
                 if col and fill>0: c.save(); ink(c,pt,22/s if True else 22,RUST,0.85*fill); c.restore()
                 c.move_to(bx,by); c.curve_to(bx+dx*Lf*0.4+nx*side*45,by+dy*Lf*0.4+ny*side*45,bx+dx*Lf*0.8-nx*side*40,by+dy*Lf*0.8-ny*side*40,ex+nx*side*30,ey+ny*side*30)
                 ink(c,pt,lw*1.1)
+                if col and fill>0.5:
+                    for b in range(1,9):
+                        q=b/9.5; o=45*3*q*(1-q)**2-40*3*q*q*(1-q)+30*q**3; px=bx+dx*Lf*q+nx*side*o; py=by+dy*Lf*q+ny*side*o
+                        c.move_to(px-nx*12,py-ny*12); c.line_to(px+nx*12,py+ny*12); ink(c,pt,lw*1.3,(0.98,0.90,0.70),0.9*fill)
             else:
                 c.move_to(bx,by); c.curve_to(bx+dx*Lf*0.5+nx*12,by+dy*Lf*0.5+ny*12,bx+dx*Lf*0.8,by+dy*Lf*0.8,ex,ey); ink(c,pt,lw*0.6,mix(INK,BROWN,0.4))
     # legs
@@ -109,6 +113,12 @@ def lyrebird(c,x,y,s=1.0,p=1.0,fan=0.0,nf=16,tilt=0.0,droop=0.0,beak=0.0,col=Tru
     ell(c,0,0,92,58,-0.18)
     if col and fill>0: wash(c,(0.60 if not female else 0.66,0.45,0.32),0.6*fill*cl(p*2-0.4))
     ink(c,pf,lw)
+    # breast stipple + wing coverts
+    if fill>0.3:
+        for k in range(26):
+            a=k*2.39996; r=40*math.sqrt((k+0.5)/26); circle(c,30+r*math.cos(a)*0.9,14+r*math.sin(a)*0.55,2.6); c.set_source_rgba(*INK,0.45*cl(p*2-0.6)); c.fill()
+        for k in range(4):
+            c.move_to(-70+k*18,-34+k*3); c.curve_to(-60+k*18,-48+k*3,-44+k*18,-46+k*3,-38+k*18,-30+k*3); ink(c,pf,lw*0.5,mix(INK,BROWN,0.3))
     # wing hatch
     for k in range(5):
         c.move_to(-40+k*14,-20+k*4); c.curve_to(-10+k*14,-5+k*4,20+k*10,10,40,22); ink(c,pf,lw*0.5,mix(INK,BROWN,0.3))
@@ -118,7 +128,9 @@ def lyrebird(c,x,y,s=1.0,p=1.0,fan=0.0,nf=16,tilt=0.0,droop=0.0,beak=0.0,col=Tru
     circle(c,44,-58,30)
     if col and fill>0: wash(c,(0.6,0.46,0.34),0.6*fill*cl(p*2-0.4))
     ink(c,pf,lw)
-    circle(c,52,-64,5); c.set_source_rgba(*INK,cl(p*2-0.5)); c.fill()
+    circle(c,52,-64,7); c.set_source_rgba(*INK,cl(p*2-0.5)); c.fill()
+    circle(c,54,-66,2.4); c.set_source_rgba(1,1,1,cl(p*2-0.5)); c.fill()
+    c.move_to(40,-80); c.curve_to(30,-92,22,-96,14,-96); c.move_to(36,-84); c.curve_to(30,-100,20,-106,10,-108); ink(c,pf,lw*0.55)
     # beak
     ob=beak*0.45
     c.move_to(70,-66); c.line_to(104,-58-ob*30); c.line_to(72,-52); ink(c,pf,lw)

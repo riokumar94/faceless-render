@@ -362,6 +362,8 @@ PLANS={'csf05':[
  [sc_wind_side,sc_speedo],[sc_wheel],[sc_but_night],'MERGE',[sc_split,S(sc_date_photo,f=IMG(8),label='STEEL PLATES')],[S(sc_hurr,phase='in'),S(sc_storm_photo,f=IMG(4)),S(sc_hurr,phase='out')],'MERGE',
  [S(sc_padlock,fast=True)],[sc_paper,sc_years],[sc_clip,S(sc_maynot,f=IMG(3))],[sc_recap1,sc_recap2],[sc_end]]}
 USED={'csf05':[0,1,2,3,4,8]}
+PLANS['csf05s']=[[sc_tower_build,sc_crack],[sc_map],[sc_stilts],[sc_desk,S(sc_joint,mode='weld')],[S(sc_joint,mode='bolt'),sc_idea],[sc_student,sc_plan_wind],[sc_recalc],[sc_load],[sc_wind_side,sc_speedo],[sc_wheel],[sc_but_night],[sc_split,sc_night],[S(sc_hurr,phase='in')],[S(sc_hurr,phase='out')],[sc_paper,sc_years],[sc_clip],[sc_recap2],[sc_end]]
+USED['csf05s']=[]
 # line spans from the script file line structure (sentences grouped per '>' line)
 def script_lines():
     if JOB:return JOB['lines']

@@ -125,7 +125,10 @@ def calendar(d,cx,cy,top,big,u):
     for k in (-120,120):d.rounded_rectangle([cx+k-14,cy-235,cx+k+14,cy-165],10,fill=INK)
     if fl<1: hh=(1-fl)*300;d.polygon([(cx-230,cy-80),(cx+230,cy-80),(cx+230,cy-80+hh),(cx-230,cy-80+hh)],fill=(220,220,230))
     ctext(d,top,cy-170,70,WH,cx,stroke=0);
-    if fl>=1: ctext(d,big,cy-20,150 if len(big)<5 else 110,INK,cx,stroke=0)
+    if fl>=1:
+        bs=150 if len(big)<5 else 110
+        while d.textlength(big,font=F(bs))>400 and bs>40:bs-=6
+        ctext(d,big,cy-20,bs,INK,cx,stroke=0)
 def joint(d,cx,cy,mode,u,t):
     d.line([(cx-330,cy+330),(cx+330,cy-330)],fill=(150,155,175),width=70);d.line([(cx-330,cy-330),(cx+330,cy+330)],fill=(130,135,160),width=70)
     d.rectangle([cx-110,cy-110,cx+110,cy+110],fill=(175,180,200),outline=INK,width=6)
@@ -380,7 +383,7 @@ def _dk(c,f=0.35):return tuple(int(x*f) for x in c)
 def _lab(d,s,y,u,size=92,fill=None,box=True):
     if not s:return
     f=F(size);
-    while d.textlength(s,font=f)>960 and size>40:size-=6;f=F(size)
+    while d.textlength(s,font=f)>840 and size>40:size-=6;f=F(size)
     pop(d,s,y,size,u,fill=fill or INK,box=CY if box else None)
 def g_words(im,d,u,t,words=(),sub=''):
     d=_gbg(im,t,_dk(C['bg'],1.0),_dk(CY,0.45));n=max(1,len(words));y0=520
@@ -447,8 +450,80 @@ def g_vs(im,d,u,t,a='',b=''):
     d.rectangle([-540+540*k,300,530-540*(1-k),1300],fill=_dk(CY,0.6));d.rectangle([550+540*(1-k),300,W+540*(1-k),1300],fill=_dk(C['acc'],0.5))
     ctext(d,a,700,64,WH,270,stroke=5);ctext(d,b,700,64,WH,810,stroke=5);pop(d,'VS',740,100,_sg(u,0.35,0.7),fill=INK,box=WH)
 def g_end(im,d,u,t):
-    d=_gbg(im,t,_dk(CY,0.4),_dk(C['bg'],1.0),1);pop(d,C['name'],620,80,u*1.5,fill=INK,box=CY);stick.draw(d,540,1350,0.9,'cheer',t,CY)
-GEN=dict(words=g_words,count=g_count,date=g_date,clock=g_clock,map=g_map,gauge=g_gauge,bars=g_bars,timeline=g_timeline,stick=g_stick,twist=g_twist,vs=g_vs,end=g_end)
+    d=_gbg(im,t,_dk(CY,0.4),_dk(C['bg'],1.0),1);es=80
+    while d.textlength(C['name'],font=F(es))>820 and es>40:es-=4
+    pop(d,C['name'],620,es,u*1.5,fill=INK,box=CY);stick.draw(d,540,1350,0.9,'cheer',t,CY)
+
+def g_turbine(im,d,u,t,label='',gust=True,n=1):
+    d=_gbg(im,t,(90,160,220),(200,230,250),1);xs=[540] if n==1 else [200+i*680/(n-1) for i in range(n)]
+    for x in xs:
+        sc=1.0 if n==1 else 0.5;hub=(x,700 if n==1 else 900);tw=hub[1]+700*sc
+        d.polygon([(x-14*sc,hub[1]),(x+14*sc,hub[1]),(x+26*sc,tw),(x-26*sc,tw)],fill=WH,outline=INK)
+        a0=t*2.5*(0.3+ease(_sg(u,0,0.5)))
+        for b in range(3):
+            a=a0+b*2*math.pi/3;L=330*sc;p=(hub[0]+L*math.cos(a),hub[1]+L*math.sin(a));q=(hub[0]+40*sc*math.cos(a+1.4),hub[1]+40*sc*math.sin(a+1.4))
+            d.polygon([hub,q,p],fill=WH,outline=INK);
+        d.ellipse([hub[0]-26*sc,hub[1]-26*sc,hub[0]+26*sc,hub[1]+26*sc],fill=(200,200,210),outline=INK,width=4)
+    d.rectangle([0,1420,W,H],fill=(70,140,70))
+    if gust:
+        for k in range(6):
+            y=420+k*110;x0=((t*500+k*190)%(W+600))-400;d.arc([x0,y-30,x0+300,y+30],200,340,fill=(255,255,255),width=8)
+    if label:_lab(d,label,1500,_sg(u,0.3,0.6),80)
+def g_icesink(im,d,u,t,obj='ship',label='',tag=''):
+    d=_gbg(im,t,(10,30,60),(2,6,18),1);k=ease(_sg(u,0,0.8))
+    ox=540;oy=500+600*k
+    if obj=='ship':
+        d.polygon([(ox-260,oy),(ox+260,oy),(ox+190,oy+120),(ox-190,oy+120)],fill=(110,70,40),outline=INK,width=6)
+        for m in (-120,0,120):d.line([(ox+m,oy),(ox+m,oy-300)],fill=(90,60,35),width=12)
+    else:
+        d.rounded_rectangle([ox-160,oy-50,ox+160,oy+50],40,fill=(250,200,40),outline=INK,width=6);d.polygon([(ox+160,oy),(ox+220,oy-50),(ox+220,oy+50)],fill=(80,80,90))
+        if int(t*4)%2 and u<0.7:d.ellipse([ox-190,oy-20,ox-150,oy+20],fill=(255,255,200))
+        for r in range(1,4):
+            rr=(t*200+r*120)%420
+            if u<0.6:d.arc([ox-rr,oy-rr,ox+rr,oy+rr],60,120,fill=(120,220,255),width=4)
+    gap=max(0,1-ease(_sg(u,0.3,0.9)));w=420*gap
+    d.polygon([(0,300),(540-w,300),(540-w-30,380),(0,380)],fill=(225,240,250),outline=(150,190,220))
+    d.polygon([(W,300),(540+w,300),(540+w+30,380),(W,380)],fill=(225,240,250),outline=(150,190,220))
+    if label:_lab(d,label,140,_sg(u,0.1,0.4),80)
+    if tag and u>0.7:pop(d,tag,1350,110,(u-0.7)*3,fill=WH,box=(120,120,130))
+def g_sonar(im,d,u,t,label=''):
+    d=_gbg(im,t,(4,20,14),(0,6,4),0);cx,cy=540,1250
+    for r in range(200,1100,200):d.arc([cx-r,cy-r,cx+r,cy+r],200,340,fill=(30,120,70),width=3)
+    a=math.radians(200+(t*90)%140);d.line([(cx,cy),(cx+1100*math.cos(a),cy+1100*math.sin(a))],fill=(80,255,140),width=8)
+    rr=(t*500)%1100;d.arc([cx-rr,cy-rr,cx+rr,cy+rr],200,340,fill=(120,255,170),width=6)
+    k=ease(_sg(u,0.35,0.85))
+    if k>0:
+        c=tuple(int(40+200*k) if i==1 else int(40+60*k) for i in range(3));ox,oy=540,700
+        d.polygon([(ox-260,oy),(ox+260,oy),(ox+190,oy+110),(ox-190,oy+110)],outline=c,width=8)
+        for m in (-120,0,120):d.line([(ox+m,oy),(ox+m,oy-260*k)],fill=c,width=8)
+    if label:_lab(d,label,1450,_sg(u,0.6,0.9),90)
+def g_diagram(im,d,u,t,title='NOTE G',cols=('Op','Var','Result'),rows=4,label=''):
+    d=_gbg(im,t,(240,230,205),(215,200,170),0);_lab(d,title,220,_sg(u,0,0.2),90)
+    x0,y0,cw,rh=120,420,840/len(cols),110
+    for i,cn in enumerate(cols):ctext(d,cn,y0+20,44,INK,x0+cw*(i+.5),stroke=0)
+    d.rectangle([x0,y0,x0+840,y0+rh*(rows+1)],outline=INK,width=6)
+    for r in range(1,rows+1):
+        k=_sg(u,0.15+r*0.12,0.25+r*0.12);d.line([(x0,y0+rh*r),(x0+840,y0+rh*r)],fill=INK,width=3)
+        if k>0:
+            for i in range(len(cols)):
+                v=['x','V%d'%(r+3),'B%d'%(2*r-1)][i%3] if i<3 else '';ctext(d,v,y0+rh*r+25,48,(120,40,30),x0+cw*(i+.5),stroke=0)
+    for i in range(1,len(cols)):d.line([(x0+cw*i,y0),(x0+cw*i,y0+rh*(rows+1))],fill=INK,width=3)
+    if label:_lab(d,label,1420,_sg(u,0.5,0.8),70)
+def g_engine(im,d,u,t,label='ANALYTICAL ENGINE'):
+    d=_gbg(im,t,(60,50,40),(20,16,12),0)
+    for c in range(5):
+        x=220+c*160
+        for r in range(6):
+            y=420+r*110;a=t*(1+c*0.3)*(1 if r%2 else -1);d.ellipse([x-48,y-48,x+48,y+48],fill=(190,150,70),outline=INK,width=4)
+            for q in range(8):b=a+q*math.pi/4;d.line([(x+30*math.cos(b),y+30*math.sin(b)),(x+48*math.cos(b),y+48*math.sin(b))],fill=INK,width=5)
+    d.rectangle([150,360,930,1100],outline=(220,190,110),width=8);_lab(d,label,1220,_sg(u,0.2,0.5),80)
+def g_prices(im,d,u,t,a='£120',b='£180',label=''):
+    d=_gbg(im,t,_dk(C['bg'],1.0),_dk(CY,0.3),0);d.rounded_rectangle([200,300,880,620],30,fill=(230,225,215),outline=INK,width=6);ctext(d,'ROOM 204',420,70,INK,stroke=0)
+    for j,(x,p) in enumerate(((330,a),(750,b))):
+        stick.draw(d,x,1300,0.8,'stand' if j==0 else 'shrug',t+j,WH);k=_sg(u,0.3+j*0.25,0.5+j*0.25)
+        if k>0:pop(d,p,800,110,k,fill=INK,x=x,box=CY if j==0 else RED)
+    if label:_lab(d,label,1450,_sg(u,0.7,0.95),70)
+GEN=dict(turbine=g_turbine,icesink=g_icesink,sonar=g_sonar,diagram=g_diagram,engine=g_engine,prices=g_prices,words=g_words,count=g_count,date=g_date,clock=g_clock,map=g_map,gauge=g_gauge,bars=g_bars,timeline=g_timeline,stick=g_stick,twist=g_twist,vs=g_vs,end=g_end)
 if JOB and PK not in PLANS and JOB.get('scenes'):
     PLANS[PK]=[[S(GEN[ty],**kw) for ty,kw in line] for line in JOB['scenes']];USED[PK]=[]
 # line spans from the script file line structure (sentences grouped per '>' line)

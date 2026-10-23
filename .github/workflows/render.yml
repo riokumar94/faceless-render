@@ -41,7 +41,7 @@ jobs:
           curl -fsSL -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/octet-stream" \
             "$(curl -fsSL -H "Authorization: Bearer $GH_TOKEN" https://api.github.com/repos/${{ github.repository }}/releases/tags/inputs | python -c "import json,sys;print([a['url'] for a in json.load(sys.stdin)['assets'] if a['name']=='$K.tar'][0])")" -o in.tar
           mkdir -p /workspace/studio/ch3
-          cp src/*.py /workspace/studio/ch3/
+          cp src/*.py /workspace/studio/ch3/; cp -r src/props /workspace/studio/ch3/
           if [ "${{ inputs.mode }}" = motion ]; then D=/workspace/job/$K; else
           D=$(python -c "import sys;sys.path.insert(0,'src');import chan;print(chan.C['${{ matrix.v.ch }}']['dir'])"); fi
           mkdir -p $D && tar -xf in.tar -C $D && echo "D=$D" >> $GITHUB_ENV

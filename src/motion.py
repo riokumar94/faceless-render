@@ -427,7 +427,7 @@ def g_bars(im,d,u,t,labels=('A','B'),vals=(1,2)):
 def g_timeline(im,d,u,t,ticks=('','')):
     d=_gbg(im,t,_dk(C['bg'],1.0),_dk(CY,0.4),0);n=len(ticks);arrow(d,(100,900),(980,900),ease(_sg(u,0,0.5)),WH,14,46)
     for i,s in enumerate(ticks):
-        k=_sg(u,0.3+i*0.5/n,0.45+i*0.5/n);x=180+i*(720/max(n-1,1))
+        k=_sg(u,0.05+i*0.3/n,0.15+i*0.3/n);x=180+i*(720/max(n-1,1))
         if k>0:d.ellipse([x-24,876,x+24,924],fill=CY);_lab(d,s,700 if i%2==0 else 980,k,64)
     stick.draw(d,180+720*ease(u),1500,0.55,'walk',t,WH)
 def g_stick(im,d,u,t,poses=('stand','point_r'),label='',n=1):
@@ -539,7 +539,7 @@ def _cnt(d,u,a,b,fmt,unit,y,size=170,pre=''):
     w=d.textlength(s,font=f);d.text(((W-w)/2,y),s,font=f,fill=WH,stroke_width=8,stroke_fill=INK)
 def g_prop(im,d,u,t,props=('📦',),anim='pop',label_='',count=None,sub='',tag='',pose=None,size=300,bgk=0,y=640):
     """props: 1-4 emoji drawn as the subject; anim pop|row|drop|grow|shrink|slide|stack|orbit|fall"""
-    props=[c for c in ''.join(props) if os.path.exists(f'{HERE}/props/{ord(c):x}.png')];d=_gbg(im,t,_dk(C['bg'],1.0),_dk(CY,0.4),bgk);n=len(props);sx=780/max(n,1)
+    _pj=''.join(props);props=[c for j,c in enumerate(_pj) if (j==0 or _pj[j-1]!='\u200d') and os.path.exists(f'{HERE}/props/{ord(c):x}.png')];d=_gbg(im,t,_dk(C['bg'],1.0),_dk(CY,0.4),bgk);n=len(props);sx=780/max(n,1)
     for i,e in enumerate(props):
         k=_sg(u,0.04+i*0.10,0.30+i*0.10);bob=10*math.sin(t*2.2+i)
         cx=540 if n==1 else 150+sx*(i+0.5);cy=y+bob;sz=size*(1 if n<=2 else 0.7)
@@ -588,7 +588,7 @@ def g_stack(im,d,u,t,parts=(('fuel',63),('duty',53)),total='',label_='',unit='p'
     if label_:label(d,label_,1320,_sg(u,0.2,0.5),70)
 def g_lean(im,d,u,t,a0=5.5,a1=5.5,weights=False,drill=False,label_=''):
     """leaning tower diagram (Pisa): tilt animates a0->a1 degrees, with lead weights / soil drills"""
-    d=_gbg(im,t,(150,200,235),(230,240,250),1);ang=a0+(a1-a0)*ease(_sg(u,0.1,0.6));d.rectangle([0,1250,W,H],fill=(150,120,80))
+    d=_gbg(im,t,(150,200,235),(230,240,250),1);ang=a0+(a1-a0)*ease(_sg(u,0.05,0.4));d.rectangle([0,1250,W,H],fill=(150,120,80))
     base=(540,1250);r=math.radians(ang);hgt=820;wd=170
     def P(x,y):return (base[0]+x*math.cos(r)+y*math.sin(r),base[1]+x*math.sin(r)-y*math.cos(r))
     for lv in range(8):
@@ -598,14 +598,14 @@ def g_lean(im,d,u,t,a0=5.5,a1=5.5,weights=False,drill=False,label_=''):
     d.line([(540,300),(540,1250)],fill=RED,width=4)
     ctext(d,f'{ang:.2f}°'.replace('.00',''),330,110,WH)
     if weights:
-        for q in range(int(ease(_sg(u,0.2,0.7))*6)):d.rectangle([700+q*40,1250-40-(q%2)*42,736+q*40,1250-(q%2)*42],fill=(90,90,100),outline=INK,width=3)
-        ctext(d,'LEAD WEIGHTS',1300,52,WH,840)
+        for q in range(int(ease(_sg(u,0.2,0.7))*6)):d.rectangle([150+q*40,1250-40-(q%2)*42,186+q*40,1250-(q%2)*42],fill=(90,90,100),outline=INK,width=3)
+        ctext(d,'LEAD WEIGHTS',1300,52,WH,270)
     if drill:
         for q in range(3):
             k=ease(_sg(u,0.15+q*0.1,0.6+q*0.1));x=380-q*90;d.line([(x,1250),(x+60*k,1250+300*k)],fill=(60,60,70),width=14)
             if k>0.4:d.ellipse([x+60*k-25,1250+300*k-25,x+60*k+25,1250+300*k+25],fill=(110,80,50))
-        ctext(d,'SOIL OUT',1300,52,WH,300)
-    if label_:label(d,label_,1450-0,_sg(u,0.3,0.6),72)
+        ctext(d,'SOIL OUT',1300,52,WH,560)
+    if label_:label(d,label_,170,_sg(u,0.15,0.4),72)
 def _banned(name):
     def f(*a,**k):raise ValueError(f'scene type {name} banned by QC v3 (generic prop / text-only / stick-only)')
     return f

@@ -551,7 +551,7 @@ def g_prop(im,d,u,t,props=('📦',),anim='pop',label_='',count=None,sub='',tag='
         k=_sg(u,0.04+i*0.10,0.30+i*0.10);bob=10*math.sin(t*2.2+i)
         cx=540 if n==1 else 150+sx*(i+0.5);cy=y+bob;sz=size*(1 if n<=2 else 0.7)
         if k<=0:continue
-        if anim=='pop':paste(im,e,cx,cy,sz*back(k))
+        if anim=='pop':paste(im,e,cx,cy,sz*(0.82+0.18*back(k)),alpha=min(1,k*2.5))   # fade in at near-full size: no tiny glyph flashes
         elif anim=='row':paste(im,e,cx,cy-(1-ease(k))*300,sz,alpha=ease(k))
         elif anim=='drop':paste(im,e,cx,cy-(1-ease(k))*900,sz,rot=(1-ease(k))*40)
         elif anim=='grow':paste(im,e,cx,cy,sz*(0.35+0.9*ease(_sg(u,0,0.8))))
@@ -574,7 +574,7 @@ def g_pair(im,d,u,t,a=('',''),b=('',''),la='',lb='',label_='',ca=None,cb=None):
         x=270+540*j;k=ease(_sg(u,0.05+0.25*j,0.35+0.25*j))
         if k<=0:continue
         d.rounded_rectangle([x-250,330+(1-k)*80,x+250,1200],30,fill=_dk(CY if j==0 else C['acc'],0.45),outline=WH,width=4)
-        paste(im,side[0],x,560,230*back(k))
+        paste(im,side[0],x,560,230*(0.82+0.18*back(k)),alpha=min(1,k*2.5))
         if cn:
             kk=ease(_sg(u,0.1+0.25*j,0.4+0.25*j));s=cn[2].format(cn[0]+(cn[1]-cn[0])*kk)+cn[3];f=F(96)
             while d.textlength(s,font=f)>460:f=F(f.size-6)
@@ -589,10 +589,10 @@ def g_stack(im,d,u,t,parts=(('fuel',63),('duty',53)),total='',label_='',unit='p'
         k=ease(_sg(u,0.05+i*0.5/len(parts),0.25+i*0.5/len(parts)));h=820*v/tot*k
         if k<=0:continue
         d.rectangle([300,y-h,620,y],fill=cols[i%5],outline=INK,width=6)
-        if k>=1:d.text((650,y-h/2-30),f'{nm} {v:g}{unit}',font=F(56),fill=WH,stroke_width=4,stroke_fill=INK)
+        if k>=1:d.text((650,y-h/2-30),f'{nm.strip()} {v:g}{unit}',font=F(56),fill=WH,stroke_width=4,stroke_fill=INK)
         y-=h
-    if total:label(d,total,260,_sg(u,0.6,0.8),90)
-    if label_:label(d,label_,1320,_sg(u,0.2,0.5),70)
+    if total:label(d,total,150,1 if u>0.6 else 0,80)   # above the tallest bar, appears whole (no pop)
+    if label_:label(d,label_,1320,1 if u>0.2 else 0,70)
 def g_lean(im,d,u,t,a0=5.5,a1=5.5,weights=False,drill=False,label_=''):
     """leaning tower diagram (Pisa): tilt animates a0->a1 degrees, with lead weights / soil drills"""
     d=_gbg(im,t,(150,200,235),(230,240,250),1);ang=a0+(a1-a0)*ease(_sg(u,0.05,0.4));d.rectangle([0,1250,W,H],fill=(150,120,80))
@@ -691,11 +691,12 @@ FRS=[int((a+b)/2*FPS) for a,b,_ in SHOTS] if TEST else range(int(DUR*FPS))
 for fr in FRS:
     t=fr/FPS;si=max(i for i,s in enumerate(SHOTS) if s[0]<=t+1e-9);a,b,fn=SHOTS[si]
     if True:
-        im=Image.new('RGB',(W,H));u=(t-a)/(b-a);fn(im,ImageDraw.Draw(im),u,t);hook(im,t);draw_caps(im,t) if t<TEND else None;disclose(im)
-    if si>0 and t-a<XF and prev is not None: im=Image.blend(prev,im,(t-a)/XF)  # 4-frame dissolve
+        im=Image.new('RGB',(W,H));u=(t-a)/(b-a);fn(im,ImageDraw.Draw(im),u,t);hook(im,t)
+    if si>0 and t-a<XF and prev is not None: im=Image.blend(prev,im,(t-a)/XF)  # dissolve scene art only
+    base=im;im=base.copy();draw_caps(im,t) if t<TEND else None;disclose(im)   # captions+disclosure drawn once, never blended/doubled
     if not TEST and abs(t-(a+b)/2)<0.5/FPS:thumbs.append(im.resize((270,480)))
     if t-a>=XF:prev=None
-    if si+1<len(SHOTS) and SHOTS[si+1][0]-t<XF+1/FPS and prev is None:prev=im.copy()
+    if si+1<len(SHOTS) and SHOTS[si+1][0]-t<XF+1/FPS and prev is None:prev=base.copy()
     if TEST:thumbs.append(im.resize((270,480)));continue
     p.stdin.write(im.tobytes())
 if TEST:

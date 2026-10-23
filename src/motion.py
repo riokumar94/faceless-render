@@ -381,10 +381,7 @@ def _gbg(im,t,c1,c2,kind=0):
     return d
 def _dk(c,f=0.35):return tuple(int(x*f) for x in c)
 def _lab(d,s,y,u,size=92,fill=None,box=True):
-    if not s:return
-    f=F(size);
-    while d.textlength(s,font=f)>840 and size>40:size-=6;f=F(size)
-    pop(d,s,y,size,u,fill=fill or INK,box=CY if box else None)
+    label(d,s,y,u,min(size,96),fill=fill if fill else None,box=CY if box else 0)
 def g_words(im,d,u,t,words=(),sub=''):
     d=_gbg(im,t,_dk(C['bg'],1.0),_dk(CY,0.45));n=max(1,len(words));y0=520
     for i,w in enumerate(words):
@@ -394,7 +391,7 @@ def g_words(im,d,u,t,words=(),sub=''):
     stick.draw(d,880+30*math.sin(t*2),1360,0.55,'point_l',t,WH)
 def _sg(u,a,b):return min(max((u-a)/max(b-a,1e-6),0),1)
 def g_count(im,d,u,t,a=0.0,b=100.0,fmt='{:,.0f}',label='',unit=''):
-    d=_gbg(im,t,_dk(CY,0.25),_dk(C['bg'],1.0));k=ease(_sg(u,0.05,0.7))
+    d=_gbg(im,t,_dk(CY,0.25),_dk(C['bg'],1.0));k=ease(_sg(u,0.02,0.35))
     v=fmt.format(a+(b-a)*k);s=v+unit;f=F(170)
     while d.textlength(s,font=f)>980:f=F(f.size-10)
     w=d.textlength(s,font=f);d.text(((W-w)/2,500),s,font=f,fill=WH,stroke_width=8,stroke_fill=INK)
@@ -523,7 +520,96 @@ def g_prices(im,d,u,t,a='£120',b='£180',label=''):
         stick.draw(d,x,1300,0.8,'stand' if j==0 else 'shrug',t+j,WH);k=_sg(u,0.3+j*0.25,0.5+j*0.25)
         if k>0:pop(d,p,800,110,k,fill=INK,x=x,box=CY if j==0 else RED)
     if label:_lab(d,label,1450,_sg(u,0.7,0.95),70)
-GEN=dict(turbine=g_turbine,icesink=g_icesink,sonar=g_sonar,diagram=g_diagram,engine=g_engine,prices=g_prices,words=g_words,count=g_count,date=g_date,clock=g_clock,map=g_map,gauge=g_gauge,bars=g_bars,timeline=g_timeline,stick=g_stick,twist=g_twist,vs=g_vs,end=g_end)
+
+import props_lib as PLB
+def label(d,s,y,u,size=84,fill=None,box=None,maxw=900,maxl=3):
+    """full phrase, wrapped to <=3 lines, pops in; never truncated"""
+    if not s or u<=0:return y
+    f,L=PLB.wrap(d,F,s,maxw,size,maxl);lh=f.size*1.18;k=back(min(u*1.6,1));box=CY if box is None else box
+    for i,l in enumerate(L):
+        w=d.textlength(l,font=f);yy=y+i*lh+(1-k)*40
+        if box:d.rounded_rectangle([(W-w)/2-24,yy-10,(W+w)/2+24,yy+f.size+14],18,fill=box)
+        d.text(((W-w)/2,yy),l,font=f,fill=fill or (INK if box else WH),stroke_width=0 if box else 5,stroke_fill=INK)
+    return y+len(L)*lh
+def _cnt(d,u,a,b,fmt,unit,y,size=170,pre=''):
+    k=ease(_sg(u,0.02,0.35))   # holds the final value from 35% of the shot
+    s=pre+fmt.format(a+(b-a)*k)+unit;f=F(size)
+    while d.textlength(s,font=f)>960:f=F(f.size-8)
+    w=d.textlength(s,font=f);d.text(((W-w)/2,y),s,font=f,fill=WH,stroke_width=8,stroke_fill=INK)
+def g_prop(im,d,u,t,props=('📦',),anim='pop',label_='',count=None,sub='',tag='',pose=None,size=300,bgk=0,y=640):
+    """props: 1-4 emoji drawn as the subject; anim pop|row|drop|grow|shrink|slide|stack|orbit|fall"""
+    props=[c for c in ''.join(props) if os.path.exists(f'{HERE}/props/{ord(c):x}.png')];d=_gbg(im,t,_dk(C['bg'],1.0),_dk(CY,0.4),bgk);n=len(props);sx=780/max(n,1)
+    for i,e in enumerate(props):
+        k=_sg(u,0.04+i*0.10,0.30+i*0.10);bob=10*math.sin(t*2.2+i)
+        cx=540 if n==1 else 150+sx*(i+0.5);cy=y+bob;sz=size*(1 if n<=2 else 0.7)
+        if k<=0:continue
+        if anim=='pop':paste(im,e,cx,cy,sz*back(k))
+        elif anim=='row':paste(im,e,cx,cy-(1-ease(k))*300,sz,alpha=ease(k))
+        elif anim=='drop':paste(im,e,cx,cy-(1-ease(k))*900,sz,rot=(1-ease(k))*40)
+        elif anim=='grow':paste(im,e,cx,cy,sz*(0.35+0.9*ease(_sg(u,0,0.8))))
+        elif anim=='shrink':paste(im,e,cx,cy,sz*(1.25-0.75*ease(_sg(u,0.1,0.8))))
+        elif anim=='slide':paste(im,e,cx+(1-ease(k))*(-900 if i%2==0 else 900),cy,sz)
+        elif anim=='fall':paste(im,e,cx,cy+ease(_sg(u,0.2,1))*700,sz,rot=ease(_sg(u,0.2,1))*60,alpha=1-0.6*ease(_sg(u,0.5,1)))
+        elif anim=='stack':
+            for q in range(1+int(ease(_sg(u,0,0.6))*5)):paste(im,e,cx+(q%2)*30,cy+200-q*70,sz*0.6)
+        elif anim=='orbit':a=t*1.5+i*2*math.pi/n;paste(im,e,540+260*math.cos(a),y+200*math.sin(a),sz*0.6)
+    yy=y+size*0.62+40
+    if count:_cnt(d,u,*count,y=yy);yy+=210
+    if pose:stick.draw(d,880,1340,0.55,pose,t,WH)
+    if label_:label(d,label_,max(yy,1000) if count else max(yy,980),_sg(u,0.12,0.4),84)
+    if sub:label(d,sub,1290,_sg(u,0.3,0.55),56,fill=C['acc'],box=0)
+    if tag and u>0.55:pop(d,tag,260,110,(u-0.55)*3,fill=WH,box=RED)
+def g_pair(im,d,u,t,a=('',''),b=('',''),la='',lb='',label_='',ca=None,cb=None):
+    """real two-sided comparison: each side = (emoji, caption) + optional counter (a,b,fmt,unit)"""
+    d=_gbg(im,t,_dk(C['bg'],1.0),_dk(CY,0.3),0)
+    for j,(side,lab,cn) in enumerate(((a,la,ca),(b,lb,cb))):
+        x=270+540*j;k=ease(_sg(u,0.05+0.25*j,0.35+0.25*j))
+        if k<=0:continue
+        d.rounded_rectangle([x-250,330+(1-k)*80,x+250,1200],30,fill=_dk(CY if j==0 else C['acc'],0.45),outline=WH,width=4)
+        paste(im,side[0],x,560,230*back(k))
+        if cn:
+            kk=ease(_sg(u,0.1+0.25*j,0.4+0.25*j));s=cn[2].format(cn[0]+(cn[1]-cn[0])*kk)+cn[3];f=F(96)
+            while d.textlength(s,font=f)>460:f=F(f.size-6)
+            w=d.textlength(s,font=f);d.text((x-w/2,760),s,font=f,fill=WH,stroke_width=6,stroke_fill=INK)
+        cap=side[1] or lab;f,L=PLB.wrap(d,F,cap,440,58,3,34)
+        for i,l in enumerate(L):w=d.textlength(l,font=f);d.text((x-w/2,900+i*f.size*1.15),l,font=f,fill=WH,stroke_width=4,stroke_fill=INK)
+    if label_:label(d,label_,1240,_sg(u,0.55,0.8),72)
+def g_stack(im,d,u,t,parts=(('fuel',63),('duty',53)),total='',label_='',unit='p'):
+    """stacked bar built part by part (e.g. a litre receipt); each part labelled with its final value"""
+    d=_gbg(im,t,_dk(C['bg'],1.0),_dk(CY,0.35),0);tot=sum(v for _,v in parts);y=1250;cols=[CY,C['acc'],RED,(120,200,255),(200,160,255)]
+    for i,(nm,v) in enumerate(parts):
+        k=ease(_sg(u,0.05+i*0.5/len(parts),0.25+i*0.5/len(parts)));h=820*v/tot*k
+        if k<=0:continue
+        d.rectangle([300,y-h,620,y],fill=cols[i%5],outline=INK,width=6)
+        if k>=1:d.text((650,y-h/2-30),f'{nm} {v:g}{unit}',font=F(56),fill=WH,stroke_width=4,stroke_fill=INK)
+        y-=h
+    if total:label(d,total,260,_sg(u,0.6,0.8),90)
+    if label_:label(d,label_,1320,_sg(u,0.2,0.5),70)
+def g_lean(im,d,u,t,a0=5.5,a1=5.5,weights=False,drill=False,label_=''):
+    """leaning tower diagram (Pisa): tilt animates a0->a1 degrees, with lead weights / soil drills"""
+    d=_gbg(im,t,(150,200,235),(230,240,250),1);ang=a0+(a1-a0)*ease(_sg(u,0.1,0.6));d.rectangle([0,1250,W,H],fill=(150,120,80))
+    base=(540,1250);r=math.radians(ang);hgt=820;wd=170
+    def P(x,y):return (base[0]+x*math.cos(r)+y*math.sin(r),base[1]+x*math.sin(r)-y*math.cos(r))
+    for lv in range(8):
+        y0,y1=lv*hgt/8,(lv+1)*hgt/8-6;ww=wd*(0.8 if lv==7 else 1)
+        d.polygon([P(-ww,y0),P(ww,y0),P(ww,y1),P(-ww,y1)],fill=(245,240,225),outline=INK)
+        for c in range(-2,3):d.line([P(c*ww/2.6,y0+10),P(c*ww/2.6,y1-6)],fill=(170,160,140),width=4)
+    d.line([(540,300),(540,1250)],fill=RED,width=4)
+    ctext(d,f'{ang:.2f}°'.replace('.00',''),330,110,WH)
+    if weights:
+        for q in range(int(ease(_sg(u,0.2,0.7))*6)):d.rectangle([700+q*40,1250-40-(q%2)*42,736+q*40,1250-(q%2)*42],fill=(90,90,100),outline=INK,width=3)
+        ctext(d,'LEAD WEIGHTS',1300,52,WH,840)
+    if drill:
+        for q in range(3):
+            k=ease(_sg(u,0.15+q*0.1,0.6+q*0.1));x=380-q*90;d.line([(x,1250),(x+60*k,1250+300*k)],fill=(60,60,70),width=14)
+            if k>0.4:d.ellipse([x+60*k-25,1250+300*k-25,x+60*k+25,1250+300*k+25],fill=(110,80,50))
+        ctext(d,'SOIL OUT',1300,52,WH,300)
+    if label_:label(d,label_,1450-0,_sg(u,0.3,0.6),72)
+def _banned(name):
+    def f(*a,**k):raise ValueError(f'scene type {name} banned by QC v3 (generic prop / text-only / stick-only)')
+    return f
+GEN=dict(prop=g_prop,pair=g_pair,stack=g_stack,lean=g_lean,turbine=g_turbine,icesink=g_icesink,sonar=g_sonar,diagram=g_diagram,engine=g_engine,prices=g_prices,words=g_words,count=g_count,date=g_date,clock=g_clock,map=g_map,gauge=g_gauge,bars=g_bars,timeline=g_timeline,stick=g_stick,twist=g_twist,vs=g_vs,end=g_end)
+for _b in ('clock','gauge','vs','map','words','stick','twist'):GEN[_b]=_banned(_b)
 if JOB and PK not in PLANS and JOB.get('scenes'):
     PLANS[PK]=[[S(GEN[ty],**kw) for ty,kw in line] for line in JOB['scenes']];USED[PK]=[]
 # line spans from the script file line structure (sentences grouped per '>' line)
@@ -613,6 +699,7 @@ src=[l.split('\t') for l in open(f'{SRC}/sources.txt') if l.startswith(K+'\t')];
 cred='\n'.join(f'- {r[1]}: "{r[5].split("File:")[-1].replace("_"," ")}" by {r[4]}, {r[3]}, via {r[2]}: {r[5]}' for r in src if r[1] in used)
 desc=f"{V['title']}\n\n{V['tags']}\n\nSources: Wikipedia, \"Citicorp Center engineering crisis\" (https://en.wikipedia.org/wiki/Citicorp_Center_engineering_crisis); Joseph Morgenstern, \"The Fifty-Nine-Story Crisis\", The New Yorker, May 1995. The 1978 topple risk is the estimate made at the time.\n\nImages cropped and animated:\n{cred}\n\nDiagrams, maps, counters and the stick-figure character are original, drawn in code. Music bed and sound effects are generated in code. Contains AI-generated voice. Educational content."
 if JOB and JOB.get('desc'):desc=JOB['desc']
+if JOB and any(ty in ('prop','pair') for ln in JOB.get('scenes',[]) for ty,_ in ln) and 'Noto Emoji' not in desc:desc+="\n\nIcons: Noto Emoji by Google (SIL Open Font License 1.1)."
 open(OUT.replace('.mp4','_description.txt'),'w').write(desc)
 json.dump({'shots':[(round(a,2),round(b,2)) for a,b,_ in SHOTS],'render_s':round(time.time()-t0)},open(OUT.replace('.mp4','_shots.json'),'w'))
 print(K,'motion render',round(time.time()-t0),'s dur',round(DUR,1),'shots',len(SHOTS))

@@ -567,7 +567,7 @@ def g_prop(im,d,u,t,props=('📦',),anim='pop',label_='',count=None,sub='',tag='
     if label_:label(d,label_,max(yy,1000) if count else max(yy,980),_sg(u,0.12,0.4),84)
     if sub:label(d,sub,1290,_sg(u,0.3,0.55),56,fill=C['acc'],box=0)
     if tag and u>0.55:pop(d,tag,260,110,(u-0.55)*3,fill=WH,box=RED)
-def g_pair(im,d,u,t,a=('',''),b=('',''),la='',lb='',label_='',ca=None,cb=None):
+def g_pair(im,d,u,t,a=('',''),b=('',''),la='',lb='',label_='',ca=None,cb=None,dash=False,guess=False):
     """real two-sided comparison: each side = (emoji, caption) + optional counter (a,b,fmt,unit)"""
     d=_gbg(im,t,_dk(C['bg'],1.0),_dk(CY,0.3),0)
     for j,(side,lab,cn) in enumerate(((a,la,ca),(b,lb,cb))):
@@ -581,6 +581,11 @@ def g_pair(im,d,u,t,a=('',''),b=('',''),la='',lb='',label_='',ca=None,cb=None):
             w=d.textlength(s,font=f);d.text((x-w/2,760),s,font=f,fill=WH,stroke_width=6,stroke_fill=INK)
         cap=side[1] or lab;f,L=PLB.wrap(d,F,cap,440,58,3,34)
         for i,l in enumerate(L):w=d.textlength(l,font=f);d.text((x-w/2,900+i*f.size*1.15),l,font=f,fill=WH,stroke_width=4,stroke_fill=INK)
+    if dash:  # side-by-side comparison either side of a dashed line
+        for y in range(300,1240,60):d.line([(540,y),(540,y+34)],fill=WH,width=10)
+    if guess:  # 'Guess which?' pause: big ? then 3-2-1 counting down, holds on 1
+        k=min(2,int(max(0,u-0.35)/0.18));f=F(110);s_='GUESS WHICH?' if u<0.35 else '321'[k]
+        w=d.textlength(s_,font=f);d.rounded_rectangle([(W-w)/2-30,170,(W+w)/2+30,310],24,fill=(250,250,245),outline=INK,width=6);d.text(((W-w)/2,180),s_,font=f,fill=INK)
     if label_:label(d,label_,1240,_sg(u,0.55,0.8),72)
 def g_stack(im,d,u,t,parts=(('fuel',63),('duty',53)),total='',label_='',unit='p'):
     """stacked bar built part by part (e.g. a litre receipt); each part labelled with its final value"""
@@ -691,7 +696,7 @@ fd=np.minimum(1,np.minimum(np.arange(n_),n_-np.arange(n_))/(0.3*sr));KM=K+'_moti
 os.chdir(TMP);sf.write(f'{KM}_mix0.wav',au*fd*0.9,sr);subprocess.run([sys.executable,os.path.join(HERE,'loud.py'),KM],check=True)
 TMPV=os.path.join(TMP,KM+'.mp4')
 p=subprocess.Popen(['ffmpeg','-y','-loglevel','error','-f','rawvideo','-pix_fmt','rgb24','-s',f'{W}x{H}','-r','30','-i','-','-i',f'{KM}_mix.wav','-c:v','libx264','-preset','medium','-pix_fmt','yuv420p','-crf','20','-c:a','aac','-b:a','192k','-shortest','-movflags','+faststart',TMPV],stdin=subprocess.PIPE)
-thumbs=[];XF=0.12;prev=None
+thumbs=[];XF=0.0 if (JOB or {}).get('cuts')=='hard' else 0.12;prev=None   # cd style v2: hard cuts
 TEST=os.environ.get('MOTION_TEST')
 FRS=[int((a+b)/2*FPS) for a,b,_ in SHOTS] if TEST else range(int(DUR*FPS))
 for fr in FRS:

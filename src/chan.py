@@ -34,3 +34,22 @@ _scr0=scripts
 def scripts(ch):
   if ch=='csf': return json.load(open('/workspace/studio/ch9/csf_scripts.json'))
   return _scr0(ch)
+# batch 1 (23 Oct 2026): channels without an earlier chan.py entry; each gets its own Kokoro voice and palette
+for _k,_d,_v,_l,_n,_h,_hi,_acc,_bg in [
+ ('qc','ch1','am_michael','a','QUIDCAST','Not financial advice.',(60,200,120),(255,255,255),(10,30,20)),
+ ('pte','ch10','bf_alice','b','PRICE TAG EXPLAINED','@PriceTagExplainedUK',(255,220,0),(255,90,60),(25,20,10)),
+ ('dtf','ch11','am_onyx','a','DEFENCE TECH FILES','@DefenceTechFiles',(150,200,90),(230,230,230),(18,24,16)),
+ ('gm','ch12','bm_daniel','b','GRID MINUTE','@GridMinute',(255,230,60),(80,200,255),(10,16,30)),
+ ('fif','ch13','bf_isabella','b','FOOD INDUSTRY FILES','@FoodIndustryFiles',(255,140,60),(255,255,255),(30,16,10)),
+ ('smf','ch14','am_liam','a','SPORT MONEY FILES','@SportMoneyFiles',(0,230,120),(255,255,255),(8,26,16)),
+ ('ll','ch15','af_nova','a','LUXURY LEDGER','@LuxuryLedgerUK',(220,190,120),(255,255,255),(14,12,10)),
+ ('fi','ch16','af_sarah','a','FORGOTTEN INVENTIONS','@ForgottenInventionsUK',(230,170,90),(250,240,220),(30,22,14)),
+ ('dsf','ch17','bm_lewis','b','DEEP SEA FILES','@DeepSeaFilesUK',(0,200,220),(160,255,240),(2,10,24)),
+ ('ss','ch18','am_adam','a','SPEC SHEET','@SpecSheetUK',(120,160,255),(255,255,255),(12,14,26))]:
+    C[_k]=dict(dir='/workspace/studio/'+_d,src=None,voice=_v,lang=_l,name=_n,handle=_h,hi=_hi,acc=_acc,bg=_bg,style='',ai='none')
+_scr1=scripts
+def scripts(ch):
+  import os
+  f=f"{C[ch]['dir']}/{ch}_scripts.json"
+  if ch in ('qc','pte','dtf','gm','fif','smf','ll','fi','dsf','ss'): return json.load(open(f))
+  return _scr1(ch)

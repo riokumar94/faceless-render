@@ -105,5 +105,5 @@ for k in range(int(DUR*FPS)):
         draw_caps(im,t-0.4)
     p.stdin.write(im.tobytes())
 p.stdin.close();p.wait()
-desc=f"{V['title']}\n\n{V['tags']} #{C['handle'][1:]}\n\nVisuals are AI-generated (FLUX.1-schnell) and the voiceover is AI-synthesised (Kokoro TTS, voice {C['voice']}). Script written and fact-checked by our team. Educational content."+("\nArtwork: public-domain paintings via Wikimedia Commons (see sources.txt)." if ch=='ogu' else "")+""
+desc=f"{V['title']}\n\n{V['tags']} #{C['handle'][1:]}\n\nContains AI-generated voice. Educational content."+("\nArtwork: public-domain paintings via Wikimedia Commons (see sources.txt)." if ch=='ogu' else "")+""
 open(f'{K}_description.txt','w').write(desc);print(K,'render',round(time.time()-t0),'s dur',round(DUR,1))

@@ -4,6 +4,7 @@ Every shot is code-drawn motion (PIL/numpy): self-drawing diagrams, maps, arrows
 build-up cutaways, stick figure (stick.py), and 2-layer mask-split parallax on licensed photos.
 Scene plans live in PLANS[K] (one list of scene calls per script line)."""
 import json,subprocess,time,sys,re,os,math,shutil,numpy as np,soundfile as sf
+if os.environ.get('MOTION_TEST') and os.path.exists('/workspace/studio/b1/HOLD'):print('HOLD: test frames paused until G approves new-style pilot');sys.exit(0)
 from PIL import Image,ImageDraw,ImageFont,ImageFilter,ImageOps
 HERE=os.path.dirname(os.path.abspath(__file__));sys.path.insert(0,HERE);import chan,stick
 t0=time.time();W,H,FPS=1080,1920,30;ch=sys.argv[1];n=int(sys.argv[2]);K=f'{ch}{n:02d}'
@@ -364,6 +365,92 @@ PLANS={'csf05':[
 USED={'csf05':[0,1,2,3,4,8]}
 PLANS['csf05s']=[[sc_tower_build,sc_crack],[sc_map],[sc_stilts],[sc_desk,S(sc_joint,mode='weld')],[S(sc_joint,mode='bolt'),sc_idea],[sc_student,sc_plan_wind],[sc_recalc],[sc_load],[sc_wind_side,sc_speedo],[sc_wheel],[sc_but_night],[sc_split,sc_night],[S(sc_hurr,phase='in')],[S(sc_hurr,phase='out')],[sc_paper,sc_years],[sc_clip],[sc_recap2],[sc_end]]
 USED['csf05s']=[]
+# ---------- generic batch-1 scene library (plans come from JOB['scenes']: per line a list of [type,{kw}]) ----------
+def _gbg(im,t,c1,c2,kind=0):
+    im.paste(bg(f'g{c1}{c2}',c1,c2));d=ImageDraw.Draw(im);o=(t*40)%120;gc=tuple(min(255,int(x*1.25+10)) for x in c1)
+    if kind==0:
+        for x in range(-120,W+120,120):d.line([(x+o,0),(x+o,H)],fill=gc,width=2)
+        for y in range(-120,H+120,120):d.line([(0,y+o),(W,y+o)],fill=gc,width=2)
+    else:
+        import random;r=random.Random(7)
+        for k in range(40):
+            x=(r.random()*W+t*r.uniform(10,60))%W;y=(r.random()*H-t*r.uniform(20,90))%H;s=r.uniform(3,9);d.ellipse([x-s,y-s,x+s,y+s],fill=gc)
+    return d
+def _dk(c,f=0.35):return tuple(int(x*f) for x in c)
+def _lab(d,s,y,u,size=92,fill=None,box=True):
+    if not s:return
+    f=F(size);
+    while d.textlength(s,font=f)>960 and size>40:size-=6;f=F(size)
+    pop(d,s,y,size,u,fill=fill or INK,box=CY if box else None)
+def g_words(im,d,u,t,words=(),sub=''):
+    d=_gbg(im,t,_dk(C['bg'],1.0),_dk(CY,0.45));n=max(1,len(words));y0=520
+    for i,w in enumerate(words):
+        k=min(max((u-i*0.6/n)/0.25,0),1)
+        if k>0:_lab(d,w,y0+i*170,k,110 if i==0 else 90,fill=INK if i%2==0 else WH,box=(i%2==0))
+    if sub:ctext(d,sub,1250,48,C['acc'],stroke=4)
+    stick.draw(d,880+30*math.sin(t*2),1360,0.55,'point_l',t,WH)
+def _sg(u,a,b):return min(max((u-a)/max(b-a,1e-6),0),1)
+def g_count(im,d,u,t,a=0.0,b=100.0,fmt='{:,.0f}',label='',unit=''):
+    d=_gbg(im,t,_dk(CY,0.25),_dk(C['bg'],1.0));k=ease(_sg(u,0.05,0.7))
+    v=fmt.format(a+(b-a)*k);s=v+unit;f=F(170)
+    while d.textlength(s,font=f)>980:f=F(f.size-10)
+    w=d.textlength(s,font=f);d.text(((W-w)/2,500),s,font=f,fill=WH,stroke_width=8,stroke_fill=INK)
+    d.rounded_rectangle([120,800,960,880],30,outline=WH,width=6);d.rounded_rectangle([130,810,130+820*k,870],24,fill=CY)
+    _lab(d,label,980,_sg(u,0.3,0.6),70)
+    for j in range(3):stick.draw(d,300+j*240,1380,0.45,'look_up' if k<1 else 'shock',t+j,WH)
+def g_date(im,d,u,t,top='',big=''):
+    d=_gbg(im,t,_dk(C['bg'],1.0),_dk(CY,0.5),1);calendar(d,540,760,top,big,_sg(u,0,0.8));stick.draw(d,540,1390,0.5,'point_up',t,WH)
+def g_clock(im,d,u,t,label=''):
+    d=_gbg(im,t,(10,10,16),_dk(CY,0.4),1);ang=ease(_sg(u,0,0.8))*math.pi*4+t*0.5;stopwatch(d,540,760,300,ang)
+    _lab(d,label,1150,_sg(u,0.4,0.7),110)
+def g_map(im,d,u,t,label=''):
+    d=_gbg(im,t,(12,30,60),(5,12,30),0);import random;r=random.Random(len(label))
+    pts=[(80+i*920/14,700+170*math.sin(i*0.7+r.random())+r.uniform(-40,40)) for i in range(15)];pline(d,pts,ease(_sg(u,0,0.5)),(200,220,240),10)
+    p0=pts[3];p1=(700,1150);
+    for q in range(12):
+        k=_sg(u,0.4+q*0.03,0.43+q*0.03)
+        if k>0:a=(p0[0]+(p1[0]-p0[0])*q/12,p0[1]+(p1[1]-p0[1])*q/12);d.ellipse([a[0]-9,a[1]-9,a[0]+9,a[1]+9],fill=CY)
+    k=back(_sg(u,0.75,1));
+    if k>0:d.ellipse([p1[0]-40*k,p1[1]-40*k,p1[0]+40*k,p1[1]+40*k],fill=RED,outline=WH,width=6)
+    _lab(d,label,1260,_sg(u,0.7,0.95),80)
+def g_gauge(im,d,u,t,label='',frac=0.8):
+    d=_gbg(im,t,(6,10,20),_dk(CY,0.35),1);cx,cy,r=540,880,360;d.arc([cx-r,cy-r,cx+r,cy+r],180,360,fill=WH,width=24)
+    for q in range(11):a=math.pi+q*math.pi/10;d.line([(cx+r*0.82*math.cos(a),cy+r*0.82*math.sin(a)),(cx+r*0.95*math.cos(a),cy+r*0.95*math.sin(a))],fill=WH,width=8)
+    a=math.pi+math.pi*frac*ease(_sg(u,0,0.7))+0.03*math.sin(t*20);d.line([(cx,cy),(cx+r*0.78*math.cos(a),cy+r*0.78*math.sin(a))],fill=RED,width=18);d.ellipse([cx-30,cy-30,cx+30,cy+30],fill=WH)
+    _lab(d,label,1020,_sg(u,0.35,0.7),100)
+def g_bars(im,d,u,t,labels=('A','B'),vals=(1,2)):
+    d=_gbg(im,t,_dk(C['bg'],1.0),_dk(CY,0.3),0);mx=max(vals) or 1;n=len(vals);bw=760/n
+    for i,(l,v) in enumerate(zip(labels,vals)):
+        k=ease(_sg(u,0.1+i*0.15,0.6+i*0.15));x=160+i*bw;h=700*v/mx*k
+        d.rectangle([x+20,1250-h,x+bw-20,1250],fill=CY if i==n-1 else C['acc'],outline=INK,width=6);ctext(d,l,1280,52,WH,x+bw/2,stroke=4)
+    d.line([(120,1250),(960,1250)],fill=WH,width=8)
+def g_timeline(im,d,u,t,ticks=('','')):
+    d=_gbg(im,t,_dk(C['bg'],1.0),_dk(CY,0.4),0);n=len(ticks);arrow(d,(100,900),(980,900),ease(_sg(u,0,0.5)),WH,14,46)
+    for i,s in enumerate(ticks):
+        k=_sg(u,0.3+i*0.5/n,0.45+i*0.5/n);x=180+i*(720/max(n-1,1))
+        if k>0:d.ellipse([x-24,876,x+24,924],fill=CY);_lab(d,s,700 if i%2==0 else 980,k,64)
+    stick.draw(d,180+720*ease(u),1500,0.55,'walk',t,WH)
+def g_stick(im,d,u,t,poses=('stand','point_r'),label='',n=1):
+    d=_gbg(im,t,_dk(CY,0.3),_dk(C['bg'],1.0),1);pa,pb=poses[0],poses[-1];k=ease(_sg(u,0.15,0.5))
+    for j in range(n):
+        x=540+(j-(n-1)/2)*300-(1-ease(_sg(u,0,0.25)))*700;stick.draw(d,x,1250,0.9 if n==1 else 0.7,stick.pose_mix(pa,pb,k),t+j,WH)
+    if label and _sg(u,0.25,0.4)>=1:
+        bubble(d,140,300,800,240,(540,600));sz=84
+        while d.textlength(label,font=F(sz))>740 and sz>34:sz-=4
+        ctext(d,label,420-sz/2,sz,INK,stroke=0)
+def g_twist(im,d,u,t):
+    c=(255,255,255) if int(t*12)%2 and u<0.25 else RED;im.paste(bg('tw',_dk(c,0.6),(10,0,0)));d=ImageDraw.Draw(im)
+    j=8*math.sin(t*50)*(1-ease(u));pop(d,"BUT HERE'S",560+j,130,u*2,fill=WH);pop(d,'THE THING',760-j,150,max(0,u*2-0.3),fill=CY)
+    stick.draw(d,540,1400,0.8,'shock',t,WH)
+def g_vs(im,d,u,t,a='',b=''):
+    d=_gbg(im,t,_dk(C['bg'],1.0),_dk(CY,0.3),0);k=ease(_sg(u,0,0.4))
+    d.rectangle([-540+540*k,300,530-540*(1-k),1300],fill=_dk(CY,0.6));d.rectangle([550+540*(1-k),300,W+540*(1-k),1300],fill=_dk(C['acc'],0.5))
+    ctext(d,a,700,64,WH,270,stroke=5);ctext(d,b,700,64,WH,810,stroke=5);pop(d,'VS',740,100,_sg(u,0.35,0.7),fill=INK,box=WH)
+def g_end(im,d,u,t):
+    d=_gbg(im,t,_dk(CY,0.4),_dk(C['bg'],1.0),1);pop(d,C['name'],620,80,u*1.5,fill=INK,box=CY);stick.draw(d,540,1350,0.9,'cheer',t,CY)
+GEN=dict(words=g_words,count=g_count,date=g_date,clock=g_clock,map=g_map,gauge=g_gauge,bars=g_bars,timeline=g_timeline,stick=g_stick,twist=g_twist,vs=g_vs,end=g_end)
+if JOB and PK not in PLANS and JOB.get('scenes'):
+    PLANS[PK]=[[S(GEN[ty],**kw) for ty,kw in line] for line in JOB['scenes']];USED[PK]=[]
 # line spans from the script file line structure (sentences grouped per '>' line)
 def script_lines():
     if JOB:return JOB['lines']
@@ -426,15 +513,22 @@ os.chdir(TMP);sf.write(f'{KM}_mix0.wav',au*fd*0.9,sr);subprocess.run([sys.execut
 TMPV=os.path.join(TMP,KM+'.mp4')
 p=subprocess.Popen(['ffmpeg','-y','-loglevel','error','-f','rawvideo','-pix_fmt','rgb24','-s',f'{W}x{H}','-r','30','-i','-','-i',f'{KM}_mix.wav','-c:v','libx264','-preset','medium','-pix_fmt','yuv420p','-crf','20','-c:a','aac','-b:a','192k','-shortest','-movflags','+faststart',TMPV],stdin=subprocess.PIPE)
 thumbs=[];XF=0.12;prev=None
-for fr in range(int(DUR*FPS)):
+TEST=os.environ.get('MOTION_TEST')
+FRS=[int((a+b)/2*FPS) for a,b,_ in SHOTS] if TEST else range(int(DUR*FPS))
+for fr in FRS:
     t=fr/FPS;si=max(i for i,s in enumerate(SHOTS) if s[0]<=t+1e-9);a,b,fn=SHOTS[si]
     if True:
         im=Image.new('RGB',(W,H));u=(t-a)/(b-a);fn(im,ImageDraw.Draw(im),u,t);hook(im,t);draw_caps(im,t) if t<TEND else None
     if si>0 and t-a<XF and prev is not None: im=Image.blend(prev,im,(t-a)/XF)  # 4-frame dissolve
-    if abs(t-(a+b)/2)<0.5/FPS:thumbs.append(im.resize((270,480)))
+    if not TEST and abs(t-(a+b)/2)<0.5/FPS:thumbs.append(im.resize((270,480)))
     if t-a>=XF:prev=None
     if si+1<len(SHOTS) and SHOTS[si+1][0]-t<XF+1/FPS and prev is None:prev=im.copy()
+    if TEST:thumbs.append(im.resize((270,480)));continue
     p.stdin.write(im.tobytes())
+if TEST:
+    p.kill();sh=Image.new('RGB',(8*270,math.ceil(len(thumbs)/8)*480))
+    for i,th in enumerate(thumbs):sh.paste(th,((i%8)*270,(i//8)*480))
+    sh.save(OUT.replace('.mp4','_test_contact.png'));print('TEST ok shots',len(SHOTS));sys.exit(0)
 p.stdin.close();assert p.wait()==0
 shutil.move(TMPV,OUT)
 cols=8;rows=math.ceil(len(thumbs)/cols);sheet=Image.new('RGB',(cols*270,rows*480),(0,0,0))
@@ -442,7 +536,8 @@ for i,th in enumerate(thumbs):sheet.paste(th,((i%cols)*270,(i//cols)*480))
 sheet.save(OUT.replace('.mp4','_contact.png'))
 src=[l.split('\t') for l in open(f'{SRC}/sources.txt') if l.startswith(K+'\t')];used=[f'{K}_s{i}.jpg' for i in USED[PK]]
 cred='\n'.join(f'- {r[1]}: "{r[5].split("File:")[-1].replace("_"," ")}" by {r[4]}, {r[3]}, via {r[2]}: {r[5]}' for r in src if r[1] in used)
-desc=f"{V['title']}\n\n{V['tags']}\n\nSources: Wikipedia, \"Citicorp Center engineering crisis\" (https://en.wikipedia.org/wiki/Citicorp_Center_engineering_crisis); Joseph Morgenstern, \"The Fifty-Nine-Story Crisis\", The New Yorker, May 1995. The 1978 topple risk is the estimate made at the time.\n\nImages cropped and animated:\n{cred}\n\nDiagrams, maps, counters and the stick-figure character are original, drawn in code. Voiceover is AI-synthesised (Kokoro TTS, voice {C['voice']}). Music bed and sound effects are generated in code. Script written and fact-checked by our team. Educational content."
+desc=f"{V['title']}\n\n{V['tags']}\n\nSources: Wikipedia, \"Citicorp Center engineering crisis\" (https://en.wikipedia.org/wiki/Citicorp_Center_engineering_crisis); Joseph Morgenstern, \"The Fifty-Nine-Story Crisis\", The New Yorker, May 1995. The 1978 topple risk is the estimate made at the time.\n\nImages cropped and animated:\n{cred}\n\nDiagrams, maps, counters and the stick-figure character are original, drawn in code. Music bed and sound effects are generated in code. Contains AI-generated voice. Educational content."
+if JOB and JOB.get('desc'):desc=JOB['desc']
 open(OUT.replace('.mp4','_description.txt'),'w').write(desc)
 json.dump({'shots':[(round(a,2),round(b,2)) for a,b,_ in SHOTS],'render_s':round(time.time()-t0)},open(OUT.replace('.mp4','_shots.json'),'w'))
 print(K,'motion render',round(time.time()-t0),'s dur',round(DUR,1),'shots',len(SHOTS))

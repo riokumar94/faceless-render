@@ -45,11 +45,12 @@ for _k,_d,_v,_l,_n,_h,_hi,_acc,_bg in [
  ('ll','ch15','af_nova','a','LUXURY LEDGER','@LuxuryLedgerUK',(220,190,120),(255,255,255),(14,12,10)),
  ('fi','ch16','af_sarah','a','FORGOTTEN INVENTIONS','@ForgottenInventionsUK',(230,170,90),(250,240,220),(30,22,14)),
  ('dsf','ch17','bm_lewis','b','DEEP SEA FILES','@DeepSeaFilesUK',(0,200,220),(160,255,240),(2,10,24)),
- ('ss','ch18','am_adam','a','SPEC SHEET','@SpecSheetUK',(120,160,255),(255,255,255),(12,14,26))]:
+ ('ss','ch18','am_adam','a','SPEC SHEET','@SpecSheetUK',(120,160,255),(255,255,255),(12,14,26)),
+ ('cd','ch19','am_michael','a','CAVEMAN DIARIES','@TheCavemanDiaries',(230,150,70),(250,235,210),(28,18,10))]:
     C[_k]=dict(dir='/workspace/studio/'+_d,src=None,voice=_v,lang=_l,name=_n,handle=_h,hi=_hi,acc=_acc,bg=_bg,style='',ai='none')
 _scr1=scripts
 def scripts(ch):
   import os
   f=f"{C[ch]['dir']}/{ch}_scripts.json"
-  if ch in ('qc','pte','dtf','gm','fif','smf','ll','fi','dsf','ss'): return json.load(open(f))
+  if ch in ('qc','pte','dtf','gm','fif','smf','ll','fi','dsf','ss','cd'): return json.load(open(f))
   return _scr1(ch)

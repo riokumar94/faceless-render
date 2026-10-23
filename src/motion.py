@@ -596,7 +596,7 @@ def g_lean(im,d,u,t,a0=5.5,a1=5.5,weights=False,drill=False,label_=''):
         d.polygon([P(-ww,y0),P(ww,y0),P(ww,y1),P(-ww,y1)],fill=(245,240,225),outline=INK)
         for c in range(-2,3):d.line([P(c*ww/2.6,y0+10),P(c*ww/2.6,y1-6)],fill=(170,160,140),width=4)
     d.line([(540,300),(540,1250)],fill=RED,width=4)
-    ctext(d,f'{ang:.2f}°'.replace('.00',''),330,110,WH)
+    ctext(d,f'{ang:.2f}°'.replace('.00',''),1020,90,WH,230)
     if weights:
         for q in range(int(ease(_sg(u,0.2,0.7))*6)):d.rectangle([150+q*40,1250-40-(q%2)*42,186+q*40,1250-(q%2)*42],fill=(90,90,100),outline=INK,width=3)
         ctext(d,'LEAD WEIGHTS',1300,52,WH,270)

@@ -699,7 +699,7 @@ for fr in FRS:
     if True:
         im=Image.new('RGB',(W,H));u=(t-a)/(b-a);fn(im,ImageDraw.Draw(im),u,t);hook(im,t)
     if si>0 and t-a<XF and prev is not None: im=Image.blend(prev,im,(t-a)/XF)  # dissolve scene art only
-    base=im;im=base.copy();draw_caps(im,t) if t<TEND else None;disclose(im)   # captions+disclosure drawn once, never blended/doubled
+    base=im;im=base.copy();draw_caps(im,t) if t<TEND else None   # captions drawn once (disclosure line removed 23:47 per G), never blended/doubled
     if not TEST and abs(t-(a+b)/2)<0.5/FPS:thumbs.append(im.resize((270,480)))
     if t-a>=XF:prev=None
     if si+1<len(SHOTS) and SHOTS[si+1][0]-t<XF+1/FPS and prev is None:prev=base.copy()

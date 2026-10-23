@@ -103,6 +103,7 @@ def kwtimes(s):
         hit=[c[1] for c in ws if norm(c[0]).startswith(norm(k))]
         out.append(hit[0] if hit else s['a']+(j+0.5)*(s['b']-s['a'])/max(1,len(s.get('kw',[]))))
     while len(out)<len(s['props']):out.append(out[-1]+0.5 if out else s['a']+0.3)
+    if out:out[0]=min(out[0],s['a']+0.12)   # first prop is up at the cut: never a figure-only frame
     return out
 # ---- templates (each: props + figure/diagram, never text-only or figure-only)
 def T_hook(im,s,t,u,b):
@@ -120,7 +121,7 @@ def T_diary(im,s,t,u,b):
     f=F(64);n=int(len(txt)*ease((t-s['a']-0.3)/1.4));d.text((960,250),txt[:0] if n<=0 else '',font=f,fill=INK)
     # strokes draw on (tally marks) + label reveals word by word, never mid-word
     for k in range(int(8*ease((t-s['a'])/2))):d.line(wob([(980+k*34,600),(995+k*34,700)],t,50+k),fill=INK,width=8)
-    wsx=txt.split();m=int(len(wsx)*ease((t-s['a']-0.2)/1.5)+0.999) if wsx else 0
+    wsx=txt.split();m=max(1,int(len(wsx)*ease((t-s['a'])/1.5)+0.999)) if wsx else 0
     if m:
         fl,L=PL.wrap(d,F,' '.join(wsx[:m]),maxw=760,size=72,maxl=3,minsz=40)
         for j,l in enumerate(L):d.text((1320,300+j*fl.size*1.15),l,font=fl,fill=INK,anchor='ma')
@@ -170,7 +171,7 @@ def T_hikers(im,s,t,u,b):
     for k,col in enumerate([(220,60,50),(40,110,200)]):
         x=x0+k*230;ImageDraw.Draw(im).polygon([(x-30,560),(x+30,560),(x+38,690),(x-38,690)],fill=col)
         stick.draw(ImageDraw.Draw(im),x,820,1.25,'walk',t+k,INK,face=True,w=12);pop(im,s['props'][0],x-40,600,80,T[0]+0.2*k,t)
-    pop(im,s['props'][1],1600,860,110,T[-1],t);card(im,s['label'],1450,170,T[0],t,w=800)
+    pop(im,s['props'][1],1600,860,110,T[-1],t);card(im,s['label'],1250,170,T[0],t,w=760)
 def T_map(im,s,t,u,b):
     d=ImageDraw.Draw(im);d.rectangle([0,0,W,H],fill=(232,216,180));T=kwtimes(s)
     alps=[(300,700),(500,520),(640,600),(820,420),(1000,560),(1180,380),(1380,540),(1600,470),(1700,700)]

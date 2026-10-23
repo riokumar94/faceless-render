@@ -1,0 +1,52 @@
+name: render
+on:
+  workflow_dispatch:
+    inputs:
+      jobs:
+        description: 'Space-separated channel:id list, e.g. "qm:3 nm:7"'
+        required: true
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      m: ${{ steps.m.outputs.m }}
+    steps:
+      - id: m
+        run: |
+          echo "m=$(echo '${{ inputs.jobs }}' | tr ' ' '\n' | grep . | jq -R 'split(":")|{ch:.[0],n:(.[1]|tonumber)}' | jq -cs .)" >> $GITHUB_OUTPUT
+  render:
+    needs: plan
+    runs-on: ubuntu-latest
+    container: python:3.12-slim-trixie
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix:
+        v: ${{ fromJson(needs.plan.outputs.m) }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      K: ${{ format('{0}{1}', matrix.v.ch, matrix.v.n < 10 && format('0{0}', matrix.v.n) || matrix.v.n) }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          apt-get update && apt-get install -y --no-install-recommends ffmpeg fonts-dejavu-core libsndfile1 curl ca-certificates
+          pip install -r requirements.txt
+          ffmpeg -version | head -1
+      - name: fetch inputs
+        run: |
+          curl -fsSL -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/octet-stream" \
+            "$(curl -fsSL -H "Authorization: Bearer $GH_TOKEN" https://api.github.com/repos/${{ github.repository }}/releases/tags/inputs | python -c "import json,sys;print([a['url'] for a in json.load(sys.stdin)['assets'] if a['name']=='$K.tar'][0])")" -o in.tar
+          mkdir -p /workspace/studio/ch3
+          cp src/*.py /workspace/studio/ch3/
+          D=$(python -c "import sys;sys.path.insert(0,'src');import chan;print(chan.C['${{ matrix.v.ch }}']['dir'])")
+          mkdir -p $D && tar -xf in.tar -C $D && echo "D=$D" >> $GITHUB_ENV
+      - name: render
+        run: python /workspace/studio/ch3/qrender.py ${{ matrix.v.ch }} ${{ matrix.v.n }} 2>&1 | tee $D/$K.render.log
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.K }}
+          path: |
+            ${{ env.D }}/${{ env.K }}.mp4
+            ${{ env.D }}/${{ env.K }}_description.txt
+            ${{ env.D }}/${{ env.K }}.render.log
+          retention-days: 3

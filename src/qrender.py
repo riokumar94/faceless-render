@@ -1,3 +1,6 @@
+import os as _o,sys as _s
+if _o.environ.get('MOTION')=='1':  # opt-in motion style; default path below unchanged
+    import runpy;runpy.run_path('/workspace/studio/ch3/motion.py',run_name='__main__');raise SystemExit
 import json,subprocess,time,sys,re,numpy as np,soundfile as sf
 from PIL import Image,ImageDraw,ImageFont,ImageFilter
 import os;sys.path.insert(0,'/workspace/studio/ch3');import chan

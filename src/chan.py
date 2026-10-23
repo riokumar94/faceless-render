@@ -28,3 +28,9 @@ def scripts(ch):
         body=[l for l in L[1:] if l.strip() and not l.startswith(('Source','Hashtags','#','Title','Description','---'))]
         vo=' '.join(body).replace('**','');V.append(dict(n=n,title=title,hook=body[0],vo=vo,tags='#cybersecurity #hacking #BreachFiles'))
     return V
+
+C['csf']=dict(dir='/workspace/studio/ch9',src=None,voice='am_eric',lang='a',name='CITY SKYLINE FILES',handle='@CitySkylineFiles',hi=(255,150,200),acc=(255,255,255),bg=(15,8,25),style='',ai='FLUX.1-schnell')
+_scr0=scripts
+def scripts(ch):
+  if ch=='csf': return json.load(open('/workspace/studio/ch9/csf_scripts.json'))
+  return _scr0(ch)

@@ -649,14 +649,18 @@ for k,c in enumerate(caps):
 def draw_caps(im,t):
     c=[c for c in groups if c[0][1]-0.05<=t<=c[-1][2]+0.2]
     if not c:return
-    c=c[-1];d=ImageDraw.Draw(im);txt=[w[0].strip('"') for w in c];f=F(70)
-    lines=[list(zip(txt,c))] if d.textlength(' '.join(txt),font=f)<920 else [list(zip(txt[:(len(txt)+1)//2],c[:(len(txt)+1)//2])),list(zip(txt[(len(txt)+1)//2:],c[(len(txt)+1)//2:]))]
+    c=c[-1];d=ImageDraw.Draw(im);txt=[w[0].strip('"') for w in c];fs=70
+    # whole words only: lines break between caption tokens (script words), never inside one; shrink font if any line is too wide
+    h=(len(txt)+1)//2
+    lines=[list(zip(txt,c))] if d.textlength(' '.join(txt),font=F(fs))<920 else [list(zip(txt[:h],c[:h])),list(zip(txt[h:],c[h:]))]
+    while fs>36 and max(d.textlength(' '.join(a for a,_ in l),font=F(fs)) for l in lines)>960:fs-=4
+    f=F(fs)
     y=1460;bw=max(d.textlength(' '.join(a for a,_ in l),font=f) for l in lines)
-    d.rounded_rectangle([(W-bw)/2-30,y-20,(W+bw)/2+30,y+len(lines)*88+10],22,fill=C['bg'])
+    d.rounded_rectangle([(W-bw)/2-30,y-20,(W+bw)/2+30,y+len(lines)*int(fs*1.26)+10],22,fill=C['bg'])
     for ln in lines:
         x=(W-d.textlength(' '.join(a for a,_ in ln),font=f))/2
         for a,w in ln:d.text((x,y),a,font=f,fill=CY if w[1]<=t+0.02 else (245,245,245));x+=d.textlength(a+' ',font=f)
-        y+=88
+        y+=int(fs*1.26)
 def disclose(im):
     d=ImageDraw.Draw(im);s='Contains AI-generated voice';f=F(30);w=d.textlength(s,font=f)
     d.rounded_rectangle([(W-w)/2-14,H-74,(W+w)/2+14,H-30],12,fill=(0,0,0));d.text(((W-w)/2,H-70),s,font=f,fill=(235,235,235))

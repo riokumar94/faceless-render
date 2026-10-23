@@ -21,5 +21,6 @@ def wrap(d,F,s,maxw=900,size=88,maxl=3,minsz=50):
             if d.textlength(c,font=f)<=maxw or not cur:cur=c
             else:L.append(cur);cur=w
         L.append(cur)
-        if (len(L)<=maxl and max(d.textlength(l,font=f) for l in L)<=maxw) or size<=minsz:return f,L
-        size-=6
+        if (len(L)<=maxl and max(d.textlength(l,font=f) for l in L)<=maxw) or size<=24:return f,L   # breaks only at spaces; shrink until even the widest single word fits
+        size-=6 if size>minsz or len(L)<=maxl else 0
+        if size<=minsz and len(L)>maxl:return f,L

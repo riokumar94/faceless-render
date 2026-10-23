@@ -185,7 +185,7 @@ def T_map(im,s,t,u,b):
     grub(im,1620,1000,1.0,'point_l',t,'calm')
 def T_altitude(im,s,t,u,b):
     scene_bg(im,t,9,True);d=ImageDraw.Draw(im);T=kwtimes(s);k=ease((t-T[0])/1.4)
-    d.rectangle([1300,180,1380,900],fill=WH,outline=INK,width=7);d.rectangle([1306,900-714*k,1374,894],fill=(90,150,210))
+    d.rectangle([1300,180,1380,900],fill=WH,outline=INK,width=7);d.rectangle([1306,min(894,900-714*k),1374,894],fill=(90,150,210))
     pop(im,s['props'][1],1000,520,320,s['a'],t);pop(im,s['props'][0],1340,950,70,s['a']+0.2,t)
     v=int(3210*k);d.text((1430,900-714*k-40),f'{v:,} m' if k<1 else s['num'],font=F(84),fill=INK)
     grub(im,380,880,1.2,'look_up',t,'surprised')

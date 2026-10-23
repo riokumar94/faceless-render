@@ -646,6 +646,8 @@ for k,c in enumerate(caps):
     cur.append(c)
     FW={'a','an','the','of','to','and','or','in','on','at','for','by','with','from','as','is','its','it\'s','their','your','my','our','this','that','than','but','so','into','onto'}
     if k+1==len(caps) or c[0][-1] in '.,:;!?"' or (len(cur)>=4 and norm(c[0]) not in FW) or len(cur)>=6:groups.append(cur);cur=[]
+# guard: caption chunks are cut only between whole script tokens, in order (no char-index slicing)
+assert [w for g in groups for w in g]==caps and all(g for g in groups),'caption chunk not whole-word'
 def draw_caps(im,t):
     c=[c for c in groups if c[0][1]-0.05<=t<=c[-1][2]+0.2]
     if not c:return

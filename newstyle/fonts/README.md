@@ -1,0 +1,1 @@
+Kalam (Regular, Bold) by Indian Type Foundry - SIL Open Font License 1.1 (https://openfontlicense.org). Redistribution permitted.

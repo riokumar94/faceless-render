@@ -1,0 +1,51 @@
+name: newstyle
+on:
+  workflow_dispatch:
+    inputs:
+      task:
+        description: 'tooltest | pilot'
+        required: true
+        default: tooltest
+      key:
+        description: 'input tar name in release "inputs" (pilot only), e.g. af22_newstyle'
+        required: false
+        default: af22_newstyle
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: deps
+        run: |
+          sudo apt-get update -q && sudo apt-get install -y -q --no-install-recommends ffmpeg libcairo2-dev libpango1.0-dev pkg-config time
+          mkdir -p ~/.fonts && cp newstyle/fonts/*.ttf ~/.fonts/ && fc-cache -f
+          python3 -m pip install -q pycairo numpy
+      - name: tooltest
+        if: inputs.task == 'tooltest'
+        run: |
+          mkdir -p out && cd tooltest
+          python3 -m pip install -q manim playwright && python3 -m playwright install --with-deps chromium >/dev/null
+          sed -i "s#executable_path='/usr/bin/google-chrome',##" h.py
+          T(){ n=$1;shift; /usr/bin/time -f "$n wall=%e s maxRSS=%M KB" "$@" >/dev/null 2>>../out/times.txt || echo "$n FAILED" >> ../out/times.txt; }
+          T ffmpeg ffmpeg -v error -y -f lavfi -i "color=c=0xf3ead7:s=1080x1920:r=30" -vf "drawtext=fontfile=$HOME/.fonts/Kalam-Bold.ttf:text='%{n}':fontsize=200:x=(w-tw)/2:y=h/2+200*sin(t)" -t 5 -c:v libx264 -crf 18 -pix_fmt yuv420p ff5s.mp4
+          T cairo python3 c.py
+          T manim python3 -m manim -qh --disable_caching -o manim5s.mp4 --media_dir mm m.py T
+          T playwright python3 h.py
+          mkdir -p /tmp/rt/src && cp remotion_index.jsx /tmp/rt/src/index.jsx && cd /tmp/rt && echo '{"name":"rt","private":true}' > package.json && npm i -s remotion@4 @remotion/cli@4 react@18 react-dom@18 >/dev/null 2>&1
+          cd /tmp/rt && T remotion npx remotion render src/index.jsx T $GITHUB_WORKSPACE/tooltest/remotion5s.mp4 --concurrency=2
+          cd $GITHUB_WORKSPACE/tooltest && for f in ff5s.mp4 cairo5s.mp4 html5s.mp4 remotion5s.mp4 $(find mm -name manim5s.mp4); do echo "$f $(ffprobe -v error -select_streams v -show_entries stream=width,height,nb_frames -of csv=p=0 $f)" >> ../out/times.txt; cp $f ../out/ ; done
+          nproc >> ../out/times.txt; cat ../out/times.txt
+      - name: pilot
+        if: inputs.task == 'pilot'
+        run: |
+          mkdir -p in out
+          URL=$(curl -fsSL -H "Authorization: Bearer $GH_TOKEN" https://api.github.com/repos/${{ github.repository }}/releases/tags/inputs | python3 -c "import json,sys;print([a['url'] for a in json.load(sys.stdin)['assets'] if a['name']=='${{ inputs.key }}.tar'][0])")
+          curl -fsSL -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/octet-stream" "$URL" -o in.tar && tar -xf in.tar -C in
+          /usr/bin/time -f "pilot wall=%e s maxRSS=%M KB" python3 newstyle/af22_pilot.py in out/pilot_newstyle.mp4 2>&1 | tee out/render.log
+          nproc >> out/render.log
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.task }}
+          path: out/

@@ -5,6 +5,10 @@ on:
       jobs:
         description: 'Space-separated channel:id list, e.g. "qm:3 nm:7"'
         required: true
+      mode:
+        description: 'still (qrender.py, default) or motion (motion.py animated)'
+        required: false
+        default: still
 jobs:
   plan:
     runs-on: ubuntu-latest
@@ -38,10 +42,15 @@ jobs:
             "$(curl -fsSL -H "Authorization: Bearer $GH_TOKEN" https://api.github.com/repos/${{ github.repository }}/releases/tags/inputs | python -c "import json,sys;print([a['url'] for a in json.load(sys.stdin)['assets'] if a['name']=='$K.tar'][0])")" -o in.tar
           mkdir -p /workspace/studio/ch3
           cp src/*.py /workspace/studio/ch3/
-          D=$(python -c "import sys;sys.path.insert(0,'src');import chan;print(chan.C['${{ matrix.v.ch }}']['dir'])")
+          if [ "${{ inputs.mode }}" = motion ]; then D=/workspace/job/$K; else
+          D=$(python -c "import sys;sys.path.insert(0,'src');import chan;print(chan.C['${{ matrix.v.ch }}']['dir'])"); fi
           mkdir -p $D && tar -xf in.tar -C $D && echo "D=$D" >> $GITHUB_ENV
       - name: render
-        run: python /workspace/studio/ch3/qrender.py ${{ matrix.v.ch }} ${{ matrix.v.n }} 2>&1 | tee $D/$K.render.log
+        run: |
+          set -o pipefail
+          if [ "${{ inputs.mode }}" = motion ]; then
+            MOTION_JOB=$D/${K}_motion.json python /workspace/studio/ch3/motion.py ${{ matrix.v.ch }} ${{ matrix.v.n }} $D/$K.mp4 2>&1 | tee $D/$K.render.log
+          else python /workspace/studio/ch3/qrender.py ${{ matrix.v.ch }} ${{ matrix.v.n }} 2>&1 | tee $D/$K.render.log; fi
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ env.K }}
@@ -49,4 +58,6 @@ jobs:
             ${{ env.D }}/${{ env.K }}.mp4
             ${{ env.D }}/${{ env.K }}_description.txt
             ${{ env.D }}/${{ env.K }}.render.log
+            ${{ env.D }}/${{ env.K }}_contact.png
+            ${{ env.D }}/${{ env.K }}_shots.json
           retention-days: 3

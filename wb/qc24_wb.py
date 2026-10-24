@@ -64,47 +64,44 @@ k=S[-1]['items'];k[0].key='for';k[1].key='twenty-six';k[2].key='twenty-seven';k[
 # 10 Go over, and you pay tax on the extra.
 sc(st('go'),[(jar(380,1100,fill_to=0.95),'go'),(coin(380,890,50),'over'),(coin(450,810,50),'over'),(coin(340,740,50),'over'),(arrow((500,740),(760,620),R),'pay'),(text('TAX',860,570,140,R),'tax'),(text('ON THE EXTRA',540,1400,100),'extra')])
 # 11 Gov.uk's example: thirteen hundred pounds of interest, basic rate.
-sc(st("gov.uk's"),[(doc(540,900),"gov.uk's"),(text('EXAMPLE',540,T,125,B),'example')])
-sc(st('thirteen'),[(coin(540,850,150),'thirteen'),(text('£1,300',540,1120,160),'pounds'),(text('INTEREST',540,1260,95),'interest'),(text('BASIC RATE',540,T,110,G),'rate')])
+sc(st("gov.uk's"),[(doc(330,950),"gov.uk's"),(text('GOV.UK',330,800,60,B),"gov.uk's"),(text('EXAMPLE',540,T,125,B),'example'),(coin(780,850,95),'thirteen'),(text('£1,300',780,1080,120),'hundred')])
+sc(32.95,[(coin(540,820,150),'of'),(text('£1,300',540,1080,160),'of'),(text('INTEREST',540,1220,95),'interest'),(text('BASIC RATE',540,T,110,G),'basic'),(person(170,1330,1.0,GR),'rate')])
 # 12 Three hundred is over the limit. Taxed at 20%, that's £60.
-sc(st('three',35),[(jar(540,1100,fill_to=0.9),'three'),(text('£1,000 LIMIT',540,880,80),'limit'),(text('£300 OVER',540,T,130,R),'over')])
-k=S[-1]['items'];k[1],k[2]=k[2],k[1]
-sc(st('taxed'),[(text('£300',290,750,130),'taxed'),(text('x 20%',760,750,130,R),'percent'),(arrow((540,880),(540,1060)),'that\'s'),(text('£60 TAX',540,1200,180,R),'pounds')])
+sc(st('three',35),[(jar(540,1100,fill_to=0.9),'three'),(text('£300 OVER',540,T,130,R),'over'),(text('£1,000 LIMIT',540,880,80),'limit'),(text('TAXED',540,1380,110,R),'taxed')])
+sc(st('at',37.5),[(text('£300',290,750,130),'twenty'),(text('x 20%',760,750,130,R),'percent'),(arrow((540,880),(540,1060)),"that's"),(text('£60 TAX',540,1200,180,R),'pounds'),(coin(200,1400,50),'pounds'),(coin(880,1400,50),'pounds')])
 # 13-14 Watch out, though. Add your interest to your other income to find your band.
-sc(st('watch'),[(person(PX,PY,SC,O,'flat','up'),'watch'),(text('WATCH OUT!',540,T,130,R),'though')])
-sc(st('add'),[(coin(230,900,90),'interest'),(text('+',420,900,160),'other'),(doc(700,920),'income'),(text('= YOUR BAND',540,1300,120,B),'band'),(text('ADD IT UP',540,T,120),'add')])
-k=S[-1]['items'];k.insert(0,k.pop())
+sc(st('watch'),[(person(PX,PY,SC,O,'flat','up'),'watch'),(text('WATCH OUT!',540,T,130,R),'though'),(text('ADD IT UP',780,800,100),'add'),(coin(780,1000,90),'interest')])
+sc(st('to',42.5),[(coin(230,900,90),'your'),(text('+',420,900,160),'other'),(doc(700,920),'income'),(text('INCOME',700,800,60),'income'),(text('= YOUR BAND',540,1300,120,B),'band'),(text('INTEREST + INCOME',540,T,100),'find')])
 # 15 Your interest counts as income, so it can tip you into a higher band.
-sc(st('your',45.1),[(coin(540,900,140),'interest'),(text('COUNTS AS INCOME',540,T,105),'income')])
+sc(st('your',45.1),[(coin(260,900,110),'interest'),(arrow((400,900),(560,900)),'counts'),(doc(780,920),'as'),(text('INCOME',780,800,60),'income'),(text('COUNTS AS INCOME',540,T,105),'income')])
 stp2=Item(L((140,1350),(140,1150),(540,1150),(540,900),(940,900),(940,1350),(140,1350)))
 sc(st('so',46.5),[(stp2,'tip'),(text('BASIC',340,1260,70),'tip'),(text('HIGHER',740,1010,70,R),'higher'),(arrow((340,1120),(700,820),R),'higher'),(text('TIPPED UP',540,T,120,R),'band')],focus=(540,1050))
 # 16-17 But here's the thing. There's a second allowance most people never hear of.
-sc(st('but',49.5),[(person(PX,PY,SC,B,'smile','up'),'but'),(text('BUT...',760,800,150,B),'thing')])
-sc(st("there's",50.9),[(piggy(380,1000),'second'),(piggy(800,700),'allowance'),(text('A 2ND ALLOWANCE',540,T,105,G),'allowance'),(text('LITTLE KNOWN',540,1400,95),'never')])
+sc(st('but',49.5),[(person(PX,PY,SC,B,'smile','up'),'but'),(text('BUT...',760,700,150,B),'thing'),(piggy(780,1150),'second')])
+sc(51.75,[(piggy(380,1000),'allowance'),(piggy(800,700),'allowance'),(text('A 2ND ALLOWANCE',540,T,105,G),'allowance'),(text('LITTLE KNOWN',540,1400,95),'never')])
 k=S[-1]['items'];k[1].fill=[(('circle',800,700,200),(170,220,170))]
 # 18 If your other taxable income is under £17,570, up to £5,000 of interest can be taxed at zero.
-sc(st('if',54.0),[(doc(540,980),'income'),(text('OTHER INCOME',540,T,110),'taxable'),(text('UNDER',540,T+140,90,B),'under')])
-sc(st('seventeen'),[(text('£17,570',540,900,190,B),'seventy'),(text('INCOME LIMIT',540,T,110),'seventeen'),(arrow((540,1060),(540,1260)),'seventy')])
-sc(st('up',59.5),[(coin(540,850,150),'five'),(text('£5,000',540,1110,170,G),'pounds'),(text('OF INTEREST',540,T,110),'interest')])
-sc(st('can',61.8),[(text('0%',540,880,330,G),'zero'),(text('TAXED AT',540,T,120),'taxed'),(tick(540,1250,90),'zero')])
+sc(st('if',54.0),[(doc(540,980),'income'),(text('INCOME',540,860,60),'income'),(text('OTHER INCOME',540,T,110),'taxable'),(text('UNDER',540,T+140,90,B),'under'),(person(170,1330,1.0,O),'other')])
+sc(st('seventeen'),[(text('INCOME LIMIT',540,T,110),'seventeen'),(stp2_:=Item(L((120,1000),(960,1000)),width=14,col=B),'thousand'),(text('£17,570',540,880,170,B),'seventy'),(person(300,1350,1.2,GR),'five'),(arrow((300,1180),(300,1060),G),'hundred'),(text('UNDER IT?',760,1250,100,G),'pounds')])
+sc(st('up',59.5),[(coin(300,850,120),'five'),(text('£5,000',300,1090,130,G),'pounds'),(text('OF INTEREST',540,T,110),'interest'),(text('TAXED AT',780,780,80),'taxed'),(text('0%',780,960,230,G),'zero'),(tick(780,1180,80),'zero')])
 # 19 Every pound you earn above £12,570 shrinks it by a pound.
 sc(st('every'),[(person(PX,PY,SC,GR),'every'),(coin(780,850,90),'pound'),(text('EARN ABOVE',540,T,115),'above')])
-sc(st('twelve'),[(text('£12,570',540,820,190),'seventy'),(text('£1 MORE =',380,1150,95),'shrinks'),(text('£1 LESS',780,1150,95,R),'pound')])
+sc(65.55,[(text('£12,570',540,700,190),'seventy'),(text('£1 MORE =',380,1000,95),'shrinks'),(text('£1 LESS',780,1000,95,R),'pound'),(coin(380,1200,60),'shrinks'),(piggy(780,1260),'by')])
+k=S[-1]['items'];k[-1].strokes=[[(x*0.5+390,y*0.5+630) for x,y in s] for s in k[-1].strokes];k[-1].fill=[(('circle',780,1260,100),(247,170,190))]
 # 20 ISA interest doesn't usually count at all.
 sc(st('isa'),[(piggy(540,1000),'isa'),(text('ISA',540,1000,120),'isa'),(text('ISA INTEREST',540,T,115),'interest'),(text("DOESN'T COUNT",540,1420,100,G),'count')])
 k=S[-1]['items'];k[0].fill=[(('circle',540,1000,200),(190,215,245))]
 # 21 And banks report your interest, so HMRC may send you a calculation.
-sc(st('and',71.8),[(bank(540,1000),'banks'),(arrow((540,700),(540,560),B),'report'),(text('BANKS REPORT IT',540,T,105),'interest')])
-sc(st('so',73.5),[(letter(540,950),'send'),(text('HMRC',540,T,140,R),'hmrc'),(text('£ CALCULATION',540,1200,90),'calculation')])
+sc(st('and',71.8),[(bank(540,1050),'banks'),(arrow((540,760),(540,620),B),'report'),(text('BANKS REPORT IT',540,T,105),'interest'),(coin(150,1300,50),'your'),(coin(930,1300,50),'your')])
+sc(73.85,[(letter(540,950),'send'),(text('HMRC',540,T,140,R),'hmrc'),(text('£ CALCULATION',540,1200,90),'calculation'),(person(170,1340,1.0,B,'flat'),'may')])
 # 22 Same interest. Very different bills.
-sc(st('same',76.7),[(person(200,1180,1.25,O),'same'),(person(540,1180,1.25,B),'same'),(person(880,1180,1.25,GR),'interest'),(text('SAME INTEREST',540,T,115),'interest')],focus=(540,1000))
-sc(st('very'),[(scale_(540,1000),'very'),(coin(220,800,40),'different'),(coin(860,800,40),'bills'),(coin(860,720,40),'bills'),(coin(860,640,40),'bills'),(text('DIFFERENT BILLS',540,T,110),'bills')])
+sc(st('same',76.7),[(text('SAME INTEREST',540,T,115),'interest'),(scale_(540,1050),'very'),(coin(220,850,40),'different'),(coin(860,850,40),'bills'),(coin(860,770,40),'bills'),(coin(860,690,40),'bills'),(text('DIFFERENT BILLS',540,1380,105,R),'bills')])
 # 23 General info, not financial advice.
 sc(st('general'),[(doc(540,960),'general'),(text('GENERAL INFO',540,T,120),'info'),(text('NOT ADVICE',540,1330,110,R),'advice')])
 END=words[-1][2]+0.4
 for a,b in zip(S,S[1:]):a['t1']=b['t0']
 S[-1]['t1']=END
-for s in S: assert 0.4<s['t1']-s['t0']<4.6, (s['t0'],s['t1'])
+for s in S: assert 1.95<s['t1']-s['t0']<4.25, (s['t0'],s['t1'])
 if os.environ.get('DRY'):
     for s_ in S:
         for it in s_['items']:

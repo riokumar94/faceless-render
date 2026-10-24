@@ -113,7 +113,7 @@ def render(scenes,words,audio,out,t_end,ends=(),stills=None):
         t0=sc_['t0'];prev=t0
         for it in sc_['items']:
             ke=word_end(words,it.key,t0,sc_['t1']) if it.key else None
-            it.te=min(ke if ke else prev+0.6,sc_['t1']-0.05);it.ts=min(prev,it.te-0.25);prev=it.te
+            it.te=min(ke if ke else prev+0.6,sc_['t1']-0.3);it.ts=min(prev,it.te-0.25);prev=it.te
     if not stills:
      p=subprocess.Popen(['nice','-n','19','ffmpeg','-y','-loglevel','error','-f','rawvideo','-pix_fmt','rgb24','-s',f'{W}x{H}','-r',str(FPS),'-i','-','-i',audio,'-t',str(t_end),
         '-c:v','libx264','-preset','veryfast','-crf','20','-pix_fmt','yuv420p','-c:a','aac','-b:a','160k','-shortest',out],stdin=subprocess.PIPE)
@@ -137,11 +137,14 @@ def render(scenes,words,audio,out,t_end,ends=(),stills=None):
         draw_marker(d,tip)
         c=next((c for c in chunks if c[0]<=t<c[1]),None)
         if c:
-            fs=78
-            while fs>40 and d.textlength(c[2],font=font(CAP,fs))>W-140:fs-=4
-            f=font(CAP,fs);bb=d.textbbox((W/2,1640),c[2],font=f,anchor='mm')
+            fs=78;txt=c[2];lines_=[txt]
+            while fs>62 and d.textlength(txt,font=font(CAP,fs))>W-140:fs-=4
+            if d.textlength(txt,font=font(CAP,fs))>W-140:
+                ws=txt.split();h=len(ws)//2 or 1;lines_=[' '.join(ws[:h]),' '.join(ws[h:])]
+            f=font(CAP,fs);msg='\n'.join(lines_)
+            bb=d.multiline_textbbox((W/2,1640),msg,font=f,anchor='mm',align='center')
             d.rounded_rectangle([bb[0]-30,bb[1]-18,bb[2]+30,bb[3]+18],22,fill=(255,255,255),outline=INK,width=6)
-            d.text((W/2,1640),c[2],font=f,fill=INK,anchor='mm')
+            d.multiline_text((W/2,1640),msg,font=f,fill=INK,anchor='mm',align='center')
         if stills: img.save(f'{out}_{fi/FPS:06.2f}.png')
         else: p.stdin.write(img.tobytes())
     if not stills: p.stdin.close();p.wait()

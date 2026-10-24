@@ -1,0 +1,35 @@
+name: wb
+on:
+  workflow_dispatch:
+    inputs:
+      key:
+        description: 'input tar name in release "inputs" without .tar, e.g. wbqc24'
+        required: true
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    container: python:3.12-slim-trixie
+    env:
+      GH_TOKEN: ${{ github.token }}
+      K: ${{ inputs.key }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          apt-get update && apt-get install -y --no-install-recommends ffmpeg curl ca-certificates
+          pip install -r requirements.txt
+      - name: fetch inputs
+        run: |
+          curl -fsSL -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/octet-stream" \
+            "$(curl -fsSL -H "Authorization: Bearer $GH_TOKEN" https://api.github.com/repos/${{ github.repository }}/releases/tags/inputs | python -c "import json,sys;print([a['url'] for a in json.load(sys.stdin)['assets'] if a['name']=='$K.tar'][0])")" -o in.tar
+          mkdir -p job out && tar -xf in.tar -C job
+      - name: render
+        run: |
+          set -o pipefail
+          S=$(date +%s)
+          WB_FONTS=$PWD/wb/fonts python wb/qc24_wb.py job out/$K.mp4 2>&1 | tee out/$K.render.log
+          echo "wall_s=$(( $(date +%s)-S ))" | tee -a out/$K.render.log
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.K }}
+          path: out/
+          retention-days: 3

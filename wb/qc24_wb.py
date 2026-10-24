@@ -236,7 +236,7 @@ sc(st('those',23.5),[(padlock(540,950),'limits'),(text('SAME',540,T,130,G),'thos
 sc(st('go'),[(jar(380,1100,fill_to=0.95),'go'),(text('GO OVER',540,T,130,R),'go'),(coin_edge(380,900,50),'over'),(coin_edge(450,810,50),'over'),(coin_edge(340,730,50),'over'),(arrow((490,760),(650,650),R),'pay'),(text('TAX',780,600,120,R),'tax'),(text('ON THE EXTRA',540,1400,100),'extra')])
 # 11 Gov.uk's example: thirteen hundred pounds of interest, basic rate.
 sc(st("gov.uk's"),[(doc(330,950,0),"gov.uk's"),(text('GOV.UK',330,800,60,B),"gov.uk's"),(text('EXAMPLE',540,T,125,B),'example'),(wallet(780,860),'thirteen'),(text('£1,300',780,1080,120),'hundred')])
-sc(32.95,[(coin_shine(540,820,150),'of'),(text('£1,300',540,1080,160),'of'),(text('INTEREST',540,1220,95),'interest'),(text('BASIC RATE',540,T,110,G),'basic'),(person(170,1330,1.0,GR),'rate')])
+sc(32.95,[(coin(540,820,150),'of'),(text('£1,300',540,1080,160),'of'),(text('INTEREST',540,1220,95),'interest'),(text('BASIC RATE',540,T,110,G),'basic'),(person(170,1330,1.0,GR),'rate')])
 # 12 Three hundred is over the limit. Taxed at 20%, that's £60.
 sc(st('three',35),[(bucket(540,1130),'three'),(spill(330,1320),'over'),(spill(760,1330),'over'),(Item(L((300,980),(780,980)),col=R,width=8),'limit'),(text('£300 OVER',540,T,130,R),'over'),(text('£1,000 LIMIT',540,880,80),'limit'),(text('TAXED',540,1380,110,R),'taxed')])
 sc(st('at',37.5),[(text('£300',290,750,130),'twenty'),(text('x 20%',760,750,130,R),'percent'),(arrow((540,880),(540,1060)),"that's"),(text('£60 TAX',540,1200,180,R),'pounds'),(receipt(880,1420),'pounds')]);S[-1]['keep']=True
@@ -253,7 +253,7 @@ sc(51.75,[(piggy(380,1000,2),'allowance'),(piggy(760,700,3),'allowance'),(text('
 # 18 If your other taxable income is under £17,570, up to £5,000 of interest can be taxed at zero.
 sc(st('if',54.0),[(doc(540,980,3),'income'),(briefcase(860,1250),'taxable'),(text('INCOME',540,860,60),'income'),(text('OTHER INCOME',540,T,110),'taxable'),(text('UNDER',540,T+140,90,B),'under'),(person(170,1330,1.0,O),'other')])
 sc(st('seventeen'),[(text('INCOME LIMIT',540,T,110),'seventeen'),(stp2_:=Item(L((120,1000),(960,1000)),width=14,col=B),'thousand'),(text('£17,570',540,880,170,B),'seventy'),(person(300,1350,1.2,GR),'five'),(arrow((300,1180),(300,1060),G),'hundred'),(text('UNDER IT?',760,1250,100,G),'pounds'),(payslip(800,1450),'five')])
-sc(59.45,[(chest(540,1000),'five'),(goldbars(540,1210),'thousand'),(sparkle(330,830),'pounds'),(text('£5,000',540,1380,130,G),'pounds'),(text('UP TO',540,T,110),'up')])
+sc(59.45,[(chest(540,1000),'five'),(goldbars(540,1210),'thousand'),(text('£5,000',540,1380,130,G),'pounds'),(text('UP TO',540,T,110),'up')])
 sc(st('interest',61.3),[(text('0%',400,1000,300,G),'zero'),(text('TAX ON INTEREST',540,T,105),'taxed'),(shield(800,1300),'can'),(text('TAXED AT ZERO',540,1450,80),'zero')])
 # 19 Every pound you earn above £12,570 shrinks it by a pound.
 sc(st('every'),[(person(PX,PY,SC,GR),'every'),(coin_mark(780,850,90,'£',(200,200,210)),'pound'),(text('EARN ABOVE',540,T,115),'above')])

@@ -26,7 +26,7 @@ jobs:
         run: |
           set -o pipefail
           S=$(date +%s)
-          WB_FONTS=$PWD/wb/fonts python wb/qc24_wb.py job out/$K.mp4 2>&1 | tee out/$K.render.log
+          python wb/qc24_wb.py job out/$K.mp4 2>&1 | tee out/$K.render.log
           echo "wall_s=$(( $(date +%s)-S ))" | tee -a out/$K.render.log
       - uses: actions/upload-artifact@v4
         with:

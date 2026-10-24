@@ -2,19 +2,11 @@
 Each scene = hard cut. Items draw path-by-path, finishing on their key spoken word.
 A drawn marker follows the stroke tip. Captions in whole words. Slow push-in."""
 import json, math, random, subprocess, sys
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw
 W,H,FPS=1080,1920,30
 INK=(22,22,22); PAPER=(250,249,244)
 import os
-FD=os.environ.get('WB_FONTS')
-FONT='/usr/share/fonts/truetype/sand-box/google/Permanent Marker/PermanentMarker-Regular.ttf'
-CAP='/usr/share/fonts/truetype/sand-box/google/Comic Relief/ComicRelief-Bold.ttf'
-if FD: FONT=FD+'/PermanentMarker-Regular.ttf'; CAP=FD+'/ComicRelief-Bold.ttf'
-_fc={}
-def font(p,s):
-    k=(p,s)
-    if k not in _fc:_fc[k]=ImageFont.truetype(p,s)
-    return _fc[k]
+import strokefont as SF
 rnd=random.Random(7)
 def wob(pts,amp=3.0):
     out=[]
@@ -53,9 +45,14 @@ def person(cx,cy,s=1.0,shirt=(232,96,52),mood='smile',arms='down'):
     st+=L((cx-18*s,cy+10*s),(cx-30*s,cy+120*s),(cx-55*s,cy+122*s));st+=L((cx+18*s,cy+10*s),(cx+30*s,cy+120*s),(cx+55*s,cy+122*s))
     return Item(st,fill=[(body,shirt),(('circle',hx,hy,r),(255,224,190))])
 def coin(cx,cy,r=45,mark='£'):
-    it=Item(circ(cx,cy,r)+circ(cx,cy,r*0.72),fill=[(('circle',cx,cy,r),(246,196,58))])
-    it.text=(mark,cx,cy,int(r*1.0),INK);return it
-def text(t,x,y,size=90,col=INK,key=None): return Item([],text=(t,x,y,size,col),key=key)
+    it=Item(circ(cx,cy,r)+circ(cx,cy,r*0.72),fill=[(('circle',cx,cy,r),(250,226,140))])
+    it.strokes+=text(mark,cx,cy,int(r*0.9)).strokes if r>=30 else [];return it
+def text(t,x,y,size=90,col=INK,key=None):
+    cap=size*0.8
+    while SF.width(t,cap)>W-200 and cap>24: cap-=2
+    hw=SF.width(t,cap)/2; x=min(max(x,110+hw),W-110-hw)
+    st=[wob(seg(pl,8),1.6) for pl in SF.strokes(t,x,y,cap)]
+    it=Item(st,key=key,width=max(6,int(cap/7)),col=col);it.is_text=True;it.y=y;return it
 def cross(cx,cy,r=60,col=(214,40,40)): return Item(L((cx-r,cy-r),(cx+r,cy+r))+L((cx+r,cy-r),(cx-r,cy+r)),width=16,col=col)
 def tick(cx,cy,r=60,col=(40,160,70)): return Item(L((cx-r,cy),(cx-r*0.3,cy+r*0.7),(cx+r,cy-r*0.8)),width=16,col=col)
 def arrow(a,b,col=INK):
@@ -85,18 +82,6 @@ def draw_fill(d,item,sc,ox,oy):
         if shape[0]=='circle':
             _,x,y,r=shape;x,y,r=x*sc+ox,y*sc+oy,r*sc*0.93;d.ellipse([x-r,y-r,x+r,y+r],fill=col)
         else:d.polygon([(x*sc+ox,y*sc+oy) for x,y in shape],fill=col)
-def draw_text(img,item,frac,sc,ox,oy):
-    t,x,y,s,col=item.text;d=ImageDraw.Draw(img)
-    while s>30 and d.textlength(t,font=font(FONT,int(s)))>(W-90):s-=4
-    f=font(FONT,max(8,int(s*sc)));bb=d.textbbox((0,0),t,font=f,anchor='mm')
-    lay=Image.new('L',(bb[2]-bb[0]+20,bb[3]-bb[1]+20),0)
-    ImageDraw.Draw(lay).text((lay.width/2,lay.height/2),t,font=f,fill=255,anchor='mm')
-    fw=lay.width;cut=int(fw*frac)
-    if cut<=0:return None
-    lay=lay.crop((0,0,cut,lay.height))
-    px,py=int(x*sc+ox-fw/2),int(y*sc+oy-lay.height/2)
-    img.paste(Image.new('RGB',lay.size,col),(px,py),lay)
-    return (px+cut,py+lay.height*0.7)
 def draw_marker(d,tip):
     if not tip:return
     x,y=tip;a=math.radians(35)  # original drawn marker: barrel + cap, follows the tip
@@ -114,6 +99,12 @@ def render(scenes,words,audio,out,t_end,ends=(),stills=None):
         for it in sc_['items']:
             ke=word_end(words,it.key,t0,sc_['t1']) if it.key else None
             it.te=min(ke if ke else prev+0.6,sc_['t1']-0.3);it.ts=min(prev,it.te-0.25);prev=it.te
+        its=sc_['items'];dl=t0+min(0.35*(sc_['t1']-t0),1.1);mx=max([i.te for i in its]+[t0+0.01])
+        k=min(1.0,(dl-t0)/(mx-t0))
+        for it in its:
+            it.ts=t0+(it.ts-t0)*k; it.te=max(it.ts+0.12,t0+(it.te-t0)*k)
+            if getattr(it,'is_text',False): it.ts=max(it.ts,it.te-0.45)
+            if getattr(it,'instant',False): it.ts=it.te=t0
     if not stills:
      p=subprocess.Popen(['nice','-n','19','ffmpeg','-y','-loglevel','error','-f','rawvideo','-pix_fmt','rgb24','-s',f'{W}x{H}','-r',str(FPS),'-i','-','-i',audio,'-t',str(t_end),
         '-c:v','libx264','-preset','veryfast','-crf','20','-pix_fmt','yuv420p','-c:a','aac','-b:a','160k','-shortest',out],stdin=subprocess.PIPE)
@@ -131,20 +122,17 @@ def render(scenes,words,audio,out,t_end,ends=(),stills=None):
             if it.strokes:
                 tp=draw_partial(d,it,fr,z,ox,oy)
                 if fr<1:tip=tp
-            if it.text:
-                tp=draw_text(img,it,fr,z,ox,oy)
-                if fr<1:tip=tp
-        draw_marker(d,tip)
         c=next((c for c in chunks if c[0]<=t<c[1]),None)
         if c:
-            fs=78;txt=c[2];lines_=[txt]
-            while fs>62 and d.textlength(txt,font=font(CAP,fs))>W-140:fs-=4
-            if d.textlength(txt,font=font(CAP,fs))>W-140:
+            fs=58;txt=c[2].upper();lines_=[txt]
+            if SF.width(txt,fs)>W-160:
                 ws=txt.split();h=len(ws)//2 or 1;lines_=[' '.join(ws[:h]),' '.join(ws[h:])]
-            f=font(CAP,fs);msg='\n'.join(lines_)
-            bb=d.multiline_textbbox((W/2,1640),msg,font=f,anchor='mm',align='center')
-            d.rounded_rectangle([bb[0]-30,bb[1]-18,bb[2]+30,bb[3]+18],22,fill=(255,255,255),outline=INK,width=6)
-            d.multiline_text((W/2,1640),msg,font=f,fill=INK,anchor='mm',align='center')
+            while fs>40 and max(SF.width(l,fs) for l in lines_)>W-160: fs-=2
+            bw=max(SF.width(l,fs) for l in lines_);lh=fs*1.6;bh=lh*len(lines_)
+            d.rounded_rectangle([W/2-bw/2-34,1640-bh/2-14,W/2+bw/2+34,1640+bh/2+14],22,fill=(255,255,255),outline=INK,width=6)
+            for li,l in enumerate(lines_):
+                for pl in SF.strokes(l,W/2,1640-bh/2+lh*(li+0.5),fs):
+                    d.line(pl,fill=INK,width=8,joint='curve')
         if stills: img.save(f'{out}_{fi/FPS:06.2f}.png')
         else: p.stdin.write(img.tobytes())
     if not stills: p.stdin.close();p.wait()

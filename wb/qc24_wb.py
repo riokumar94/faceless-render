@@ -20,6 +20,8 @@ def sc(t0,items,focus=(540,900)):
             x[0].key=x[1];x=x[0]
         if getattr(x,'is_text',False) and abs(x.y-T)<1: x.instant=True
         out.append(x)
+    big=next((x for x in out if not getattr(x,'is_text',False)),None)
+    if big is not None: big.instant=True
     S.append(dict(t0=t0,items=out,focus=focus))
 def jar(cx,cy,col=(150,200,230),fill_to=0.5):
     top=cy-150+300*(1-fill_to)

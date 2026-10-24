@@ -21,7 +21,7 @@ def sc(t0,items,focus=(540,900)):
         if getattr(x,'is_text',False) and abs(x.y-T)<1: x.instant=True
         out.append(x)
     big=next((x for x in out if not getattr(x,'is_text',False)),None)
-    if big is not None: big.instant=True
+    if big is not None: big.quick=True
     S.append(dict(t0=t0,items=out,focus=focus))
 def jar(cx,cy,col=(150,200,230),fill_to=0.5):
     top=cy-150+300*(1-fill_to)
@@ -127,13 +127,60 @@ def bills(cx,cy,n):
     st_=[]
     for i in range(n): st_+=rect(cx-90+i*6,cy-40-i*34,180,30)
     return Item(st_)
+
+def sparkle(cx,cy,r=40,col=Y):
+    return Item(L((cx-r,cy),(cx+r,cy))+L((cx,cy-r),(cx,cy+r))+L((cx-r*0.5,cy-r*0.5),(cx+r*0.5,cy+r*0.5)),col=col,width=8)
+def goldbars(cx,cy):
+    sh=[];st_=[]
+    for dx,dy in ((-70,0),(70,0),(0,-55)):
+        q=[(cx+dx-60,cy+dy+25),(cx+dx+60,cy+dy+25),(cx+dx+40,cy+dy-25),(cx+dx-40,cy+dy-25)]
+        st_+=poly(*q);sh.append((q,(240,190,60)))
+    return Item(st_,fill=sh)
+def payslip(cx,cy):
+    st_=rect(cx-110,cy-140,220,280)+L((cx-80,cy-90),(cx+60,cy-90))+L((cx-80,cy-40),(cx+80,cy-40))+L((cx-80,cy+10),(cx+40,cy+10))+L((cx+10,cy+80),(cx+80,cy+80))
+    return Item(st_,fill=[([(cx-106,cy-136),(cx+106,cy-136),(cx+106,cy+136),(cx-106,cy+136)],(235,240,250))])
+def stamp(cx,cy):
+    st_=rect(cx-130,cy+40,260,60)+poly((cx-50,cy+40),(cx-35,cy-60),(cx+35,cy-60),(cx+50,cy+40))+circ(cx,cy-110,55)
+    return Item(st_,fill=[(('circle',cx,cy-110,55),(214,40,40)),([(cx-126,cy+44),(cx+126,cy+44),(cx+126,cy+96),(cx-126,cy+96)],(120,80,50))])
+def key_(cx,cy):
+    return Item(circ(cx-90,cy,50,0,360)+L((cx-40,cy),(cx+120,cy))+L((cx+80,cy),(cx+80,cy+40))+L((cx+110,cy),(cx+110,cy+30)),col=(200,150,30),width=12)
+def shield(cx,cy):
+    q=[(cx-110,cy-120),(cx+110,cy-120),(cx+100,cy+20),(cx,cy+140),(cx-100,cy+20)]
+    return Item(poly(*q),fill=[(q,(150,215,150))])
+def magnifier(cx,cy):
+    return Item(circ(cx,cy,80,0,360)+L((cx+57,cy+57),(cx+150,cy+150)),fill=[(('circle',cx,cy,80),(220,235,250))])
+def _bbox(it):
+    xs=[p[0] for s_ in it.strokes for p in s_];ys=[p[1] for s_ in it.strokes for p in s_]
+    return min(xs),min(ys),max(xs),max(ys)
+def _scale(it,k,ax,ay,bx,by):
+    f=lambda x,y:(bx+(x-ax)*k,by+(y-ay)*k)
+    it.strokes=[[f(*p) for p in s_] for s_ in it.strokes]
+    nf=[]
+    for shp,col in it.fill or []:
+        if shp[0]=='circle':x,y=f(shp[1],shp[2]);nf.append((('circle',x,y,shp[3]*k),col))
+        else:nf.append(([f(*p) for p in shp],col))
+    if it.fill:it.fill=nf
+    it.width=min(18,max(it.width,it.width*k**0.5))
+    if hasattr(it,'y'):it.y=f(0,it.y)[1]
+def enlarge():
+    for s_ in S:
+        hd=[i for i in s_['items'] if getattr(i,'is_text',False) and i.y<T+200]
+        body=[i for i in s_['items'] if i not in hd and i.strokes]
+        if not body:continue
+        top=max([_bbox(i)[3] for i in hd]+[200])+70;bot=1480;l,r=105,975
+        bb=[_bbox(i) for i in body];x0=min(b[0] for b in bb);y0=min(b[1] for b in bb);x1=max(b[2] for b in bb);y1=max(b[3] for b in bb)
+        k=min((r-l)/(x1-x0),(bot-top)/(y1-y0),2.3)
+        ax,ay=(x0+x1)/2,(y0+y1)/2
+        for i in body:_scale(i,k,ax,ay,(l+r)/2,(top+bot)/2)
+        s_['focus']=((l+r)/2,(top+bot)/2)
 PX=290;PY=1250;SC=2.1   # big character, left
 T=380
 # 0 Three people earn the same interest on their savings
 sc(0.0,[(person(200,1180,1.25,O),'three'),(person(540,1180,1.25,B),'people'),(person(880,1180,1.25,GR),'earn'),(text('SAME INTEREST',540,T,110),'interest'),
         (coin(200,1440,55),'savings'),(coin(540,1440,55),'savings'),(coin(880,1440,55),'savings')],focus=(540,1000))
 # 1 One of them can't keep a single penny of it tax-free.
-sc(st('one'),[(person(PX,PY,SC,B,'sad'),'one'),(coin1p(780,860,90),'penny'),(cross(780,860,130),'penny'),(text('NOT TAX-FREE',540,T,115,R),'tax-free'),(text('WHY?',780,1250,150,R),'why')])
+sc(st('one'),[(person(PX,PY,SC,B,'sad'),'one'),(text("CAN'T KEEP IT",540,T,115,R),'keep'),(coin1p(780,860,90),'penny'),(cross(780,860,130),'penny'),(text('A SINGLE PENNY',780,1150,70),'penny')])
+sc(st('it',5.0),[(stamp(400,1050),'tax-free'),(text('NOT TAX-FREE',540,T,115,R),'tax-free'),(text('TAX-FREE',400,1250,70,G),'tax-free'),(text('WHY?',820,900,170,R),'why')])
 # 2-3 Why? It's called the Personal Savings Allowance.
 sc(st('called'),[(piggy(540,1000,0),'personal'),(text('PERSONAL SAVINGS',540,T,100),'savings'),(text('ALLOWANCE',540,T+130,125,G),'allowance')])
 # 4 It started in April twenty sixteen.
@@ -154,7 +201,7 @@ sc(st('additional-rate'),[(person(PX,PY,SC,P,'sad'),'additional-rate'),(text('AD
 # 9 And for 2026 to 2027, those limits are unchanged.
 sc(st('and',23.5),deskcal(540,950,'TAX YEAR','26/27'))
 k=S[-1]['items'];k[0].key='for';k[1].key='twenty-six';k[2].key='twenty-seven'
-sc(st('those',23.5),[(padlock(540,950),'limits'),(text('SAME',540,T,130,G),'those'),(text('LIMITS UNCHANGED',540,1330,100),'unchanged'),(tick(800,900,70),'unchanged')])
+sc(st('those',23.5),[(padlock(540,950),'limits'),(text('SAME',540,T,130,G),'those'),(text('LIMITS UNCHANGED',540,1330,100),'unchanged'),(tick(800,900,70),'unchanged'),(key_(300,1180),'unchanged')])
 # 10 Go over, and you pay tax on the extra.
 sc(st('go'),[(jar(380,1100,fill_to=0.95),'go'),(text('GO OVER',540,T,130,R),'go'),(coin_edge(380,900,50),'over'),(coin_edge(450,810,50),'over'),(coin_edge(340,730,50),'over'),(arrow((490,760),(650,650),R),'pay'),(text('TAX',780,600,120,R),'tax'),(text('ON THE EXTRA',540,1400,100),'extra')])
 # 11 Gov.uk's example: thirteen hundred pounds of interest, basic rate.
@@ -175,24 +222,26 @@ sc(st('but',49.5),[(person(PX,PY,SC,B,'smile','up'),'but'),(text('BUT...',760,70
 sc(51.75,[(piggy(380,1000,2),'allowance'),(piggy(760,700,3),'allowance'),(text('A 2ND ALLOWANCE',540,T,105,G),'allowance'),(text('LITTLE KNOWN',540,1400,95),'never')])
 # 18 If your other taxable income is under £17,570, up to £5,000 of interest can be taxed at zero.
 sc(st('if',54.0),[(doc(540,980,3),'income'),(briefcase(860,1250),'taxable'),(text('INCOME',540,860,60),'income'),(text('OTHER INCOME',540,T,110),'taxable'),(text('UNDER',540,T+140,90,B),'under'),(person(170,1330,1.0,O),'other')])
-sc(st('seventeen'),[(text('INCOME LIMIT',540,T,110),'seventeen'),(stp2_:=Item(L((120,1000),(960,1000)),width=14,col=B),'thousand'),(text('£17,570',540,880,170,B),'seventy'),(person(300,1350,1.2,GR),'five'),(arrow((300,1180),(300,1060),G),'hundred'),(text('UNDER IT?',760,1250,100,G),'pounds')])
-sc(st('up',59.5),[(chest(300,860),'five'),(text('£5,000',300,1090,130,G),'pounds'),(text('OF INTEREST',540,T,110),'interest'),(text('TAXED AT',780,780,80),'taxed'),(text('0%',780,960,230,G),'zero'),(tick(780,1180,80),'zero')])
+sc(st('seventeen'),[(text('INCOME LIMIT',540,T,110),'seventeen'),(stp2_:=Item(L((120,1000),(960,1000)),width=14,col=B),'thousand'),(text('£17,570',540,880,170,B),'seventy'),(person(300,1350,1.2,GR),'five'),(arrow((300,1180),(300,1060),G),'hundred'),(text('UNDER IT?',760,1250,100,G),'pounds'),(payslip(800,1450),'five')])
+sc(st('up',59.5),[(chest(540,1000),'five'),(goldbars(540,1210),'thousand'),(sparkle(330,830),'pounds'),(sparkle(760,800,30),'pounds'),(text('£5,000',540,1380,130,G),'pounds'),(text('UP TO',540,T,110),'up')])
+sc(st('interest',61.3),[(text('0%',400,1000,300,G),'zero'),(text('TAX ON INTEREST',540,T,105),'taxed'),(tick(800,1000,110),'zero'),(shield(800,1300),'can'),(text('TAXED AT ZERO',540,1450,80),'zero')])
 # 19 Every pound you earn above £12,570 shrinks it by a pound.
 sc(st('every'),[(person(PX,PY,SC,GR),'every'),(coin_mark(780,850,90,'£',(200,200,210)),'pound'),(text('EARN ABOVE',540,T,115),'above')])
 sc(65.55,[(text('£12,570',540,700,190),'seventy'),(text('£1 MORE =',380,1000,95),'shrinks'),(text('£1 LESS',780,1000,95,R),'pound'),(halfcoin(380,1200,60),'shrinks'),(piggy(780,1260,4),'by')])
 # 20 ISA interest doesn't usually count at all.
-sc(st('isa'),[(piggy(540,1000,5),'isa'),(text('ISA',540,1000,120),'isa'),(text('ISA INTEREST',540,T,115),'interest'),(text("DOESN'T COUNT",540,1420,100,G),'count')])
+sc(st('isa'),[(piggy(540,1000,5),'isa'),(text('ISA',540,1000,120),'isa'),(text('ISA INTEREST',540,T,115),'interest'),(text("DOESN'T COUNT",540,1420,100,G),'count'),(magnifier(860,800),'usually')])
 # 21 And banks report your interest, so HMRC may send you a calculation.
 sc(st('and',71.8),[(bank(540,1050),'banks'),(arrow((540,760),(540,620),B),'report'),(text('BANKS REPORT IT',540,T,105),'interest'),(card(220,1320),'your')])
 sc(73.85,[(letter(540,950),'send'),(text('HMRC',540,T,140,R),'hmrc'),(text('£ CALCULATION',540,1200,90),'calculation'),(person(170,1340,1.0,B,'flat'),'may')])
 # 22 Same interest. Very different bills.
 sc(st('same',76.7),[(text('SAME INTEREST',540,T,115),'interest'),(scale_(540,1050),'very'),(bills(220,980,1),'different'),(bills(860,980,4),'bills'),(text('DIFFERENT BILLS',540,1380,105,R),'bills')])
 # 23 General info, not financial advice.
-sc(st('general'),[(doc(540,960,4),'general'),(text('GENERAL INFO',540,T,120),'info'),(text('NOT ADVICE',540,1330,110,R),'advice')])
+sc(st('general'),[(doc(540,960,4),'general'),(text('GENERAL INFO',540,T,120),'info'),(text('NOT ADVICE',540,1330,110,R),'advice'),(person(860,1250,0.9,P,'flat','head'),'not')])
+enlarge()
 END=words[-1][2]+0.4
 for a,b in zip(S,S[1:]):a['t1']=b['t0']
 S[-1]['t1']=END
-for s in S: assert 1.95<s['t1']-s['t0']<=4.0, (s['t0'],s['t1'])
+for s in S: assert 1.7<s['t1']-s['t0']<=3.8, (s['t0'],s['t1'])
 if os.environ.get('DRY'):
     for s_ in S:
         for it in s_['items']:

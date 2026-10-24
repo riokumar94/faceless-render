@@ -104,6 +104,8 @@ def render(scenes,words,audio,out,t_end,ends=(),stills=None):
         for it in its:
             it.ts=t0+(it.ts-t0)*k; it.te=max(it.ts+0.12,t0+(it.te-t0)*k)
             if getattr(it,'is_text',False): it.ts=max(it.ts,it.te-0.45)
+            if getattr(it,'quick',False): it.ts=t0; it.te=t0+0.3
+            elif not getattr(it,'instant',False): it.ts=max(it.ts,t0+0.3); it.te=max(it.te,it.ts+0.12)
             if getattr(it,'instant',False): it.ts=it.te=t0
     if not stills:
      p=subprocess.Popen(['nice','-n','19','ffmpeg','-y','-loglevel','error','-f','rawvideo','-pix_fmt','rgb24','-s',f'{W}x{H}','-r',str(FPS),'-i','-','-i',audio,'-t',str(t_end),

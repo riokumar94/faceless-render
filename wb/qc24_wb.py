@@ -77,7 +77,11 @@ def spill(cx,cy):
 def deskcal(cx,cy,top,big):
     it=Item(poly((cx-240,cy+200),(cx-200,cy-180),(cx+200,cy-180),(cx+240,cy+200))+L((cx-205,cy-90),(cx+205,cy-90))+circ(cx-110,cy-185,18,0,360)+circ(cx,cy-185,18,0,360)+circ(cx+110,cy-185,18,0,360)+L((cx-230,cy+160),(cx+230,cy+160)),fill=[([(cx-197,cy-176),(cx+197,cy-176),(cx+202,cy-94),(cx-202,cy-94)],G)])
     return [it,text(top,cx,cy-135,62,(255,255,255)),text(big,cx,cy+40,140)]
-def coin1p(cx,cy,r): c=coin(cx,cy,r,'1p'); c.fill=[(('circle',cx,cy,r),(205,125,70))]; return c
+def _inst(t_):
+    t_.instant=True;return t_
+def coin1p(cx,cy,r):  # flat line-art coin: one wobbly outline, flat copper fill, big 1P
+    c=Item(circ(cx,cy,r,0,360),fill=[(('circle',cx,cy,r),(205,125,70))],width=16)
+    t_=text('1P',cx,cy+r*0.05,int(r*1.1));c.strokes+=t_.strokes;return c
 def note(cx,cy):
     return Item(rect(cx-160,cy-80,320,160)+rect(cx-170,cy-95,320,160)+circ(cx,cy-10,40)+L((cx-130,cy-50),(cx-90,cy-50)),fill=[([(cx-156,cy-76),(cx+156,cy-76),(cx+156,cy+76),(cx-156,cy+76)],(170,215,160))],text=None)
 def moneybag(cx,cy):
@@ -204,7 +208,7 @@ sc(0.0,[(person(200,1180,1.25,O),'three'),(person(540,1180,1.25,B),'people'),(pe
         (coin(200,1440,55),'savings'),(coin(540,1440,55),'savings'),(coin(880,1440,55),'savings')],focus=(540,1000))
 # 1 One of them can't keep a single penny of it tax-free.
 sc(st('one'),[(person(PX,PY,SC,B,'sad'),'one'),(text("CAN'T KEEP IT",540,T,115,R),'keep'),(coin1p(780,860,90),'penny'),(cross(780,860,130),'penny'),(text('A SINGLE PENNY',780,1150,70),'penny')])
-sc(st('it',5.0),[(stamp(400,1050),'tax-free'),(text('NOT TAX-FREE',540,T,115,R),'tax-free'),(text('TAX-FREE',400,1250,70,G),'tax-free'),(text('WHY?',820,900,170,R),'why')])
+sc(st('it',5.0),[(stamp(400,1050),'tax-free'),(text('NOT TAX-FREE',540,T,115,R),'tax-free'),(_inst(text('TAX-FREE',400,1250,70,G)),'tax-free'),(text('WHY?',820,900,170,R),'why')])
 # 2-3 Why? It's called the Personal Savings Allowance.
 sc(st('called'),[(piggy(540,1000,0),'personal'),(text('PERSONAL SAVINGS',540,T,100),'savings'),(text('ALLOWANCE',540,T+130,125,G),'allowance')])
 # 4 It started in April twenty sixteen.

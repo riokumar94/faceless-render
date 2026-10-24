@@ -156,7 +156,7 @@ sc(st('and',23.5),deskcal(540,950,'TAX YEAR','26/27'))
 k=S[-1]['items'];k[0].key='for';k[1].key='twenty-six';k[2].key='twenty-seven'
 sc(st('those',23.5),[(padlock(540,950),'limits'),(text('SAME',540,T,130,G),'those'),(text('LIMITS UNCHANGED',540,1330,100),'unchanged'),(tick(800,900,70),'unchanged')])
 # 10 Go over, and you pay tax on the extra.
-sc(st('go'),[(jar(380,1100,fill_to=0.95),'go'),(coin_edge(380,900,50),'over'),(coin_edge(450,810,50),'over'),(coin_edge(340,730,50),'over'),(arrow((490,760),(650,650),R),'pay'),(text('TAX',780,600,120,R),'tax'),(text('ON THE EXTRA',540,1400,100),'extra')])
+sc(st('go'),[(jar(380,1100,fill_to=0.95),'go'),(text('GO OVER',540,T,130,R),'go'),(coin_edge(380,900,50),'over'),(coin_edge(450,810,50),'over'),(coin_edge(340,730,50),'over'),(arrow((490,760),(650,650),R),'pay'),(text('TAX',780,600,120,R),'tax'),(text('ON THE EXTRA',540,1400,100),'extra')])
 # 11 Gov.uk's example: thirteen hundred pounds of interest, basic rate.
 sc(st("gov.uk's"),[(doc(330,950,0),"gov.uk's"),(text('GOV.UK',330,800,60,B),"gov.uk's"),(text('EXAMPLE',540,T,125,B),'example'),(wallet(780,860),'thirteen'),(text('£1,300',780,1080,120),'hundred')])
 sc(32.95,[(coin_shine(540,820,150),'of'),(text('£1,300',540,1080,160),'of'),(text('INTEREST',540,1220,95),'interest'),(text('BASIC RATE',540,T,110,G),'basic'),(person(170,1330,1.0,GR),'rate')])

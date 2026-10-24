@@ -152,7 +152,6 @@ sc(st('so',46.5),[(stp2,'tip'),(text('BASIC',340,1260,70),'tip'),(text('HIGHER',
 # 16-17 But here's the thing. There's a second allowance most people never hear of.
 sc(st('but',49.5),[(person(PX,PY,SC,B,'smile','up'),'but'),(text('BUT...',760,700,150,B),'thing'),(piggy(780,1150,1),'second')])
 sc(51.75,[(piggy(380,1000,2),'allowance'),(piggy(800,700,3),'allowance'),(text('A 2ND ALLOWANCE',540,T,105,G),'allowance'),(text('LITTLE KNOWN',540,1400,95),'never')])
-k=S[-1]['items'];k[1].fill=[(('circle',800,700,200),(170,220,170))]
 # 18 If your other taxable income is under £17,570, up to £5,000 of interest can be taxed at zero.
 sc(st('if',54.0),[(doc(540,980,3),'income'),(briefcase(860,1250),'taxable'),(text('INCOME',540,860,60),'income'),(text('OTHER INCOME',540,T,110),'taxable'),(text('UNDER',540,T+140,90,B),'under'),(person(170,1330,1.0,O),'other')])
 sc(st('seventeen'),[(text('INCOME LIMIT',540,T,110),'seventeen'),(stp2_:=Item(L((120,1000),(960,1000)),width=14,col=B),'thousand'),(text('£17,570',540,880,170,B),'seventy'),(person(300,1350,1.2,GR),'five'),(arrow((300,1180),(300,1060),G),'hundred'),(text('UNDER IT?',760,1250,100,G),'pounds')])
@@ -160,10 +159,8 @@ sc(st('up',59.5),[(chest(300,860),'five'),(text('£5,000',300,1090,130,G),'pound
 # 19 Every pound you earn above £12,570 shrinks it by a pound.
 sc(st('every'),[(person(PX,PY,SC,GR),'every'),(coin_mark(780,850,90,'£1',(200,200,210)),'pound'),(text('EARN ABOVE',540,T,115),'above')])
 sc(65.55,[(text('£12,570',540,700,190),'seventy'),(text('£1 MORE =',380,1000,95),'shrinks'),(text('£1 LESS',780,1000,95,R),'pound'),(halfcoin(380,1200,60),'shrinks'),(piggy(780,1260,4),'by')])
-k=S[-1]['items'];k[-1].strokes=[[(x*0.5+390,y*0.5+630) for x,y in s] for s in k[-1].strokes];k[-1].fill=[(('circle',780,1260,100),(247,170,190))]
 # 20 ISA interest doesn't usually count at all.
 sc(st('isa'),[(piggy(540,1000,5),'isa'),(text('ISA',540,1000,120),'isa'),(text('ISA INTEREST',540,T,115),'interest'),(text("DOESN'T COUNT",540,1420,100,G),'count')])
-k=S[-1]['items'];k[0].fill=[(('circle',540,1000,200),(190,215,245))]
 # 21 And banks report your interest, so HMRC may send you a calculation.
 sc(st('and',71.8),[(bank(540,1050),'banks'),(arrow((540,760),(540,620),B),'report'),(text('BANKS REPORT IT',540,T,105),'interest'),(card(170,1320),'your')])
 sc(73.85,[(letter(540,950),'send'),(text('HMRC',540,T,140,R),'hmrc'),(text('£ CALCULATION',540,1200,90),'calculation'),(person(170,1340,1.0,B,'flat'),'may')])

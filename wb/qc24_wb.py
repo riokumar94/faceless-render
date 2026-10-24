@@ -238,6 +238,9 @@ sc(st('same',76.7),[(text('SAME INTEREST',540,T,115),'interest'),(scale_(540,105
 # 23 General info, not financial advice.
 sc(st('general'),[(doc(540,960,4),'general'),(text('GENERAL INFO',540,T,120),'info'),(text('NOT ADVICE',540,1330,110,R),'advice'),(person(860,1250,0.9,P,'flat','head'),'not')])
 enlarge()
+for s_ in S:
+    for i in s_['items']:
+        if getattr(i,'is_text',False) and abs(i.y-T)<1: i.instant=True
 END=words[-1][2]+0.4
 for a,b in zip(S,S[1:]):a['t1']=b['t0']
 S[-1]['t1']=END

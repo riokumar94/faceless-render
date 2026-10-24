@@ -253,8 +253,8 @@ sc(51.75,[(piggy(380,1000,2),'allowance'),(piggy(760,700,3),'allowance'),(text('
 # 18 If your other taxable income is under £17,570, up to £5,000 of interest can be taxed at zero.
 sc(st('if',54.0),[(doc(540,980,3),'income'),(briefcase(860,1250),'taxable'),(text('INCOME',540,860,60),'income'),(text('OTHER INCOME',540,T,110),'taxable'),(text('UNDER',540,T+140,90,B),'under'),(person(170,1330,1.0,O),'other')])
 sc(st('seventeen'),[(text('INCOME LIMIT',540,T,110),'seventeen'),(stp2_:=Item(L((120,1000),(960,1000)),width=14,col=B),'thousand'),(text('£17,570',540,880,170,B),'seventy'),(person(300,1350,1.2,GR),'five'),(arrow((300,1180),(300,1060),G),'hundred'),(text('UNDER IT?',760,1250,100,G),'pounds'),(payslip(800,1450),'five')])
-sc(59.45,[(chest(540,1000),'five'),(goldbars(540,1210),'thousand'),(sparkle(330,830),'pounds'),(sparkle(760,800,30),'pounds'),(text('£5,000',540,1380,130,G),'pounds'),(text('UP TO',540,T,110),'up')])
-sc(st('interest',61.3),[(text('0%',400,1000,300,G),'zero'),(text('TAX ON INTEREST',540,T,105),'taxed'),(tick(800,1000,110),'zero'),(shield(800,1300),'can'),(text('TAXED AT ZERO',540,1450,80),'zero')])
+sc(59.45,[(chest(540,1000),'five'),(goldbars(540,1210),'thousand'),(sparkle(330,830),'pounds'),(text('£5,000',540,1380,130,G),'pounds'),(text('UP TO',540,T,110),'up')])
+sc(st('interest',61.3),[(text('0%',400,1000,300,G),'zero'),(text('TAX ON INTEREST',540,T,105),'taxed'),(shield(800,1300),'can'),(text('TAXED AT ZERO',540,1450,80),'zero')])
 # 19 Every pound you earn above £12,570 shrinks it by a pound.
 sc(st('every'),[(person(PX,PY,SC,GR),'every'),(coin_mark(780,850,90,'£',(200,200,210)),'pound'),(text('EARN ABOVE',540,T,115),'above')])
 sc(65.55,[(text('£12,570',540,700,190),'seventy'),(text('£1 MORE =',380,1000,95),'shrinks'),(text('£1 LESS',780,1000,95,R),'pound'),(halfcoin(380,1200,60),'shrinks'),(piggy(780,1260,4),'by')]);S[-1]['keep']=True

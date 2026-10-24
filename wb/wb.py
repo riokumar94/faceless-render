@@ -104,7 +104,7 @@ def render(scenes,words,audio,out,t_end,ends=(),stills=None):
         for it in its:
             it.ts=t0+(it.ts-t0)*k; it.te=max(it.ts+0.12,t0+(it.te-t0)*k)
             if getattr(it,'is_text',False): it.ts=max(it.ts,it.te-0.45)
-            if getattr(it,'quick',False): it.ts=t0; it.te=t0+0.3
+            if getattr(it,'quick',False): it.ts=t0-0.1; it.te=t0+0.3
             elif not getattr(it,'instant',False): it.ts=max(it.ts,t0+0.3); it.te=max(it.te,it.ts+0.12)
             if getattr(it,'instant',False): it.ts=it.te=t0
     if not stills:
@@ -120,7 +120,7 @@ def render(scenes,words,audio,out,t_end,ends=(),stills=None):
         for it in sc_['items']:
             if t<it.ts:continue
             fr=1.0 if t>=it.te else ease((t-it.ts)/(it.te-it.ts))
-            if it.fill and fr>=1:draw_fill(d,it,z,ox,oy)
+            if it.fill and (fr>=1 or getattr(it,'quick',False)):draw_fill(d,it,z,ox,oy)
             if it.strokes:
                 tp=draw_partial(d,it,fr,z,ox,oy)
                 if fr<1:tip=tp

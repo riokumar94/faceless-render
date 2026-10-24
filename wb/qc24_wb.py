@@ -264,7 +264,7 @@ sc(st('isa'),[(piggy(540,1000,5),'isa'),(text('ISA',540,1000,120),'isa'),(text('
 sc(st('and',71.8),[(bank(540,1050),'banks'),(arrow((540,760),(540,620),B),'report'),(text('BANKS REPORT IT',540,T,105),'interest'),(card(220,1320),'your')])
 sc(73.85,[(letter(540,950),'send'),(text('HMRC',540,T,140,R),'hmrc'),(text('£ CALCULATION',540,1200,90),'calculation'),(person(170,1340,1.0,B,'flat'),'may')])
 # 22 Same interest. Very different bills.
-sc(st('same',76.7),[(text('SAME INTEREST',540,T,115),'interest'),(scale_(540,1050),'very'),(bills(220,980,1),'different'),(bills(860,980,4),'bills'),(text('DIFFERENT BILLS',540,1380,105,R),'bills')])
+sc(st('same',76.7),[(text('SAME INTEREST',540,T,115),'interest'),(scale_(540,1050),'very'),(bills(860,980,4),'bills'),(text('DIFFERENT BILLS',540,1380,105,R),'bills')])
 # 23 General info, not financial advice.
 sc(st('general'),[(doc(540,960,4),'general'),(text('GENERAL INFO',540,T,120),'info'),(text('NOT ADVICE',540,1330,110,R),'advice'),(person(860,1250,0.9,P,'flat','head'),'not')])
 enlarge()

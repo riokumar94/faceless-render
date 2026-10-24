@@ -4,7 +4,7 @@ A drawn marker follows the stroke tip. Captions in whole words. Slow push-in."""
 import json, math, random, subprocess, sys
 from PIL import Image, ImageDraw
 W,H,FPS=1080,1920,30
-INK=(22,22,22); PAPER=(250,249,244)
+INK=(22,22,22); PAPER=(250,249,244); PAPERS=[PAPER,(228,237,248)]  # v13: alternate paper per shot so every cut registers
 import os
 import strokefont as SF
 rnd=random.Random(7)
@@ -108,9 +108,11 @@ def render(scenes,words,audio,out,t_end,ends=(),stills=None):
             elif not getattr(it,'instant',False): it.ts=max(it.ts,t0+0.3); it.te=max(it.te,it.ts+0.12)
             if getattr(it,'instant',False): it.ts=it.te=t0
             if getattr(it,'is_text',False) and not getattr(it,'instant',False):
-                it.te=min(it.te,t0+0.75,sc_['t1']-0.35); it.ts=min(it.ts,it.te-0.12)
+                # v13: words pop in whole (never partly written), no later than t0+0.3
+                it.ts=it.te=min(max(it.ts,t0+0.15),t0+0.3)
             it.te=min(it.te,sc_['t1']-0.35); it.ts=min(it.ts,it.te)
             assert it.te<sc_['t1']-0.3, (t0,it.te)
+            if getattr(it,'is_text',False): assert it.te==it.ts and it.te<=t0+0.3, (t0,it.ts,it.te)
     if not stills:
      p=subprocess.Popen(['nice','-n','19','ffmpeg','-y','-loglevel','error','-f','rawvideo','-pix_fmt','rgb24','-s',f'{W}x{H}','-r',str(FPS),'-i','-','-i',audio,'-t',str(t_end),
         '-c:v','libx264','-preset','veryfast','-crf','20','-pix_fmt','yuv420p','-c:a','aac','-b:a','160k','-shortest',out],stdin=subprocess.PIPE)
@@ -120,7 +122,7 @@ def render(scenes,words,audio,out,t_end,ends=(),stills=None):
         t=fi/FPS;sc_=next((s for s in scenes if s['t0']<=t<s['t1']),scenes[-1])
         u=(t-sc_['t0'])/max(0.1,sc_['t1']-sc_['t0']);z=1.0+0.07*u  # slow push-in
         cx,cy=sc_.get('focus',(W/2,H*0.45));ox=cx-cx*z;oy=cy-cy*z
-        img=Image.new('RGB',(W,H),PAPER);d=ImageDraw.Draw(img);tip=None
+        img=Image.new('RGB',(W,H),PAPERS[scenes.index(sc_)%2]);d=ImageDraw.Draw(img);tip=None
         for it in sc_['items']:
             if t<it.ts:continue
             fr=1.0 if t>=it.te else ease((t-it.ts)/(it.te-it.ts))

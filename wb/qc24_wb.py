@@ -162,17 +162,41 @@ def _scale(it,k,ax,ay,bx,by):
     if it.fill:it.fill=nf
     it.width=min(18,max(it.width,it.width*k**0.5))
     if hasattr(it,'y'):it.y=f(0,it.y)[1]
+def _area(b):return (b[2]-b[0])*(b[3]-b[1])
+def _inside(b,m):cx,cy=(b[0]+b[2])/2,(b[1]+b[3])/2;return m[0]<=cx<=m[2] and m[1]<=cy<=m[3]
+def _fit(items,box,kmax):
+    bb=[_bbox(i) for i in items];x0=min(b[0] for b in bb);y0=min(b[1] for b in bb);x1=max(b[2] for b in bb);y1=max(b[3] for b in bb)
+    k=min((box[2]-box[0])/max(1,x1-x0),(box[3]-box[1])/max(1,y1-y0),kmax)
+    for i in items:_scale(i,k,(x0+x1)/2,(y0+y1)/2,(box[0]+box[2])/2,(box[1]+box[3])/2)
 def enlarge():
-    for s_ in S:
-        hd=[i for i in s_['items'] if getattr(i,'is_text',False) and i.y<T+200]
-        body=[i for i in s_['items'] if i not in hd and i.strokes]
-        if not body:continue
-        top=max([_bbox(i)[3] for i in hd]+[200])+70;bot=1480;l,r=105,975
-        bb=[_bbox(i) for i in body];x0=min(b[0] for b in bb);y0=min(b[1] for b in bb);x1=max(b[2] for b in bb);y1=max(b[3] for b in bb)
-        k=min((r-l)/(x1-x0),(bot-top)/(y1-y0),2.3)
-        ax,ay=(x0+x1)/2,(y0+y1)/2
-        for i in body:_scale(i,k,ax,ay,(l+r)/2,(top+bot)/2)
-        s_['focus']=((l+r)/2,(top+bot)/2)
+    for n,s_ in enumerate(S):
+        its=s_['items']
+        hd=[i for i in its if getattr(i,'is_text',False) and i.y<T+200]
+        top=max([_bbox(i)[3] for i in hd]+[200])+60
+        props=[i for i in its if not getattr(i,'is_text',False) and i.strokes]
+        if s_.get('keep') and props:
+            ps=sorted(props,key=lambda i:_area(_bbox(i)))[1:];s_['items']=[i for i in its if i not in ps];its=s_['items']
+        if n==0 or not props or s_.get('keep'):
+            body=[i for i in its if i not in hd];_fit(body,(105,top,975,1480),2.3);continue
+        np_=[i for i in props if not getattr(i,'person',False)] or props
+        main=max(np_,key=lambda i:_area(_bbox(i)));mb=_bbox(main)
+        grp=[main]+[i for i in its if i is not main and i not in hd and _inside(_bbox(i),mb)]
+        rest=[i for i in its if i not in grp and i not in hd]
+        others=[i for i in rest if not getattr(i,'is_text',False)]
+        acc=min(others,key=lambda i:_area(_bbox(i))) if others else None
+        txt=[i for i in rest if getattr(i,'is_text',False)]
+        s_['items']=[i for i in its if i in grp or i in hd or i in txt or i is acc]
+        for i in s_['items']:i.quick=False
+        main.quick=True
+        bot=1480 if not (txt or acc) else 1200
+        _fit(grp,(105,top,975,bot),3.5)
+        if acc is not None:_fit([acc],(105,1220,300,1480),1.0)
+        if txt:
+            x0=320 if acc is not None else 105;h=(1480-1220)/len(txt)
+            for j,t_ in enumerate(txt):
+                b=_bbox(t_);k=min(1.0,(975-x0)/(b[2]-b[0]),(h-10)/(b[3]-b[1]))
+                _scale(t_,k,(b[0]+b[2])/2,(b[1]+b[3])/2,(x0+975)/2,1220+h*(j+0.5))
+        s_['focus']=(540,(top+bot)/2)
 PX=290;PY=1250;SC=2.1   # big character, left
 T=380
 # 0 Three people earn the same interest on their savings
@@ -193,7 +217,7 @@ sc(st('allowance',11.8),[(text('YOUR TAX BAND',540,T,115),'depends'),(stp,'incom
 S[-1]['items'][-1].key='tax'
 # 6 Basic-rate payers get up to one thousand pounds of interest tax-free.
 sc(st('basic-rate'),[(person(PX,PY,SC,GR),'basic-rate'),(text('BASIC RATE',540,T,115),'payers'),(arrow((560,1000),(760,880),G),'get'),(text('UP TO',780,800,110,G),'to')])
-sc(16.9,[(note(780,830),'pounds'),(text('£1,000',780,1060,140,G),'pounds'),(tick(780,1230,80),'tax-free'),(person(250,1300,1.3,GR,'smile','up'),'interest')])
+sc(16.9,[(note(780,830),'pounds'),(text('£1,000',780,1060,140,G),'pounds'),(person(250,1300,1.3,GR,'smile','up'),'interest')])
 # 7 Higher-rate payers get five hundred.
 sc(st('higher-rate'),[(person(PX,PY,SC,B),'higher-rate'),(text('HIGHER RATE',540,T,115),'payers'),(moneybag(780,850),'five'),(text('£500',780,1080,150,(220,140,20)),'hundred')])
 # 8 Additional-rate payers get nothing.
@@ -201,7 +225,7 @@ sc(st('additional-rate'),[(person(PX,PY,SC,P,'sad'),'additional-rate'),(text('AD
 # 9 And for 2026 to 2027, those limits are unchanged.
 sc(st('and',23.5),deskcal(540,950,'TAX YEAR','26/27'))
 k=S[-1]['items'];k[0].key='for';k[1].key='twenty-six';k[2].key='twenty-seven'
-sc(st('those',23.5),[(padlock(540,950),'limits'),(text('SAME',540,T,130,G),'those'),(text('LIMITS UNCHANGED',540,1330,100),'unchanged'),(tick(800,900,70),'unchanged'),(key_(300,1180),'unchanged')])
+sc(st('those',23.5),[(padlock(540,950),'limits'),(text('SAME',540,T,130,G),'those'),(text('LIMITS UNCHANGED',540,1330,100),'unchanged'),(key_(300,1180),'unchanged')])
 # 10 Go over, and you pay tax on the extra.
 sc(st('go'),[(jar(380,1100,fill_to=0.95),'go'),(text('GO OVER',540,T,130,R),'go'),(coin_edge(380,900,50),'over'),(coin_edge(450,810,50),'over'),(coin_edge(340,730,50),'over'),(arrow((490,760),(650,650),R),'pay'),(text('TAX',780,600,120,R),'tax'),(text('ON THE EXTRA',540,1400,100),'extra')])
 # 11 Gov.uk's example: thirteen hundred pounds of interest, basic rate.
@@ -209,7 +233,7 @@ sc(st("gov.uk's"),[(doc(330,950,0),"gov.uk's"),(text('GOV.UK',330,800,60,B),"gov
 sc(32.95,[(coin_shine(540,820,150),'of'),(text('£1,300',540,1080,160),'of'),(text('INTEREST',540,1220,95),'interest'),(text('BASIC RATE',540,T,110,G),'basic'),(person(170,1330,1.0,GR),'rate')])
 # 12 Three hundred is over the limit. Taxed at 20%, that's £60.
 sc(st('three',35),[(bucket(540,1130),'three'),(spill(330,1320),'over'),(spill(760,1330),'over'),(Item(L((300,980),(780,980)),col=R,width=8),'limit'),(text('£300 OVER',540,T,130,R),'over'),(text('£1,000 LIMIT',540,880,80),'limit'),(text('TAXED',540,1380,110,R),'taxed')])
-sc(st('at',37.5),[(text('£300',290,750,130),'twenty'),(text('x 20%',760,750,130,R),'percent'),(arrow((540,880),(540,1060)),"that's"),(text('£60 TAX',540,1200,180,R),'pounds'),(receipt(880,1420),'pounds')])
+sc(st('at',37.5),[(text('£300',290,750,130),'twenty'),(text('x 20%',760,750,130,R),'percent'),(arrow((540,880),(540,1060)),"that's"),(text('£60 TAX',540,1200,180,R),'pounds'),(receipt(880,1420),'pounds')]);S[-1]['keep']=True
 # 13-14 Watch out, though. Add your interest to your other income to find your band.
 sc(st('watch'),[(person(PX,PY,SC,O,'flat','up'),'watch'),(text('WATCH OUT!',540,T,130,R),'though'),(text('ADD IT UP',780,800,100),'add'),(purse(780,1050),'interest'),(coin(700,1250,40),'interest'),(coin(860,1260,40),'interest')])
 sc(st('to',42.5),[(coin_mark(230,900,90,'%',(150,215,150)),'your'),(text('+',420,900,160),'other'),(doc(700,920,1),'income'),(text('INCOME',700,800,60),'income'),(text('= YOUR BAND',540,1300,120,B),'band'),(text('INTEREST + INCOME',540,T,100),'find')])
@@ -223,11 +247,11 @@ sc(51.75,[(piggy(380,1000,2),'allowance'),(piggy(760,700,3),'allowance'),(text('
 # 18 If your other taxable income is under £17,570, up to £5,000 of interest can be taxed at zero.
 sc(st('if',54.0),[(doc(540,980,3),'income'),(briefcase(860,1250),'taxable'),(text('INCOME',540,860,60),'income'),(text('OTHER INCOME',540,T,110),'taxable'),(text('UNDER',540,T+140,90,B),'under'),(person(170,1330,1.0,O),'other')])
 sc(st('seventeen'),[(text('INCOME LIMIT',540,T,110),'seventeen'),(stp2_:=Item(L((120,1000),(960,1000)),width=14,col=B),'thousand'),(text('£17,570',540,880,170,B),'seventy'),(person(300,1350,1.2,GR),'five'),(arrow((300,1180),(300,1060),G),'hundred'),(text('UNDER IT?',760,1250,100,G),'pounds'),(payslip(800,1450),'five')])
-sc(st('up',59.5),[(chest(540,1000),'five'),(goldbars(540,1210),'thousand'),(sparkle(330,830),'pounds'),(sparkle(760,800,30),'pounds'),(text('£5,000',540,1380,130,G),'pounds'),(text('UP TO',540,T,110),'up')])
+sc(59.45,[(chest(540,1000),'five'),(goldbars(540,1210),'thousand'),(sparkle(330,830),'pounds'),(sparkle(760,800,30),'pounds'),(text('£5,000',540,1380,130,G),'pounds'),(text('UP TO',540,T,110),'up')])
 sc(st('interest',61.3),[(text('0%',400,1000,300,G),'zero'),(text('TAX ON INTEREST',540,T,105),'taxed'),(tick(800,1000,110),'zero'),(shield(800,1300),'can'),(text('TAXED AT ZERO',540,1450,80),'zero')])
 # 19 Every pound you earn above £12,570 shrinks it by a pound.
 sc(st('every'),[(person(PX,PY,SC,GR),'every'),(coin_mark(780,850,90,'£',(200,200,210)),'pound'),(text('EARN ABOVE',540,T,115),'above')])
-sc(65.55,[(text('£12,570',540,700,190),'seventy'),(text('£1 MORE =',380,1000,95),'shrinks'),(text('£1 LESS',780,1000,95,R),'pound'),(halfcoin(380,1200,60),'shrinks'),(piggy(780,1260,4),'by')])
+sc(65.55,[(text('£12,570',540,700,190),'seventy'),(text('£1 MORE =',380,1000,95),'shrinks'),(text('£1 LESS',780,1000,95,R),'pound'),(halfcoin(380,1200,60),'shrinks'),(piggy(780,1260,4),'by')]);S[-1]['keep']=True
 # 20 ISA interest doesn't usually count at all.
 sc(st('isa'),[(piggy(540,1000,5),'isa'),(text('ISA',540,1000,120),'isa'),(text('ISA INTEREST',540,T,115),'interest'),(text("DOESN'T COUNT",540,1420,100,G),'count'),(magnifier(860,800),'usually')])
 # 21 And banks report your interest, so HMRC may send you a calculation.

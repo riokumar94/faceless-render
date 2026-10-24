@@ -43,7 +43,7 @@ def person(cx,cy,s=1.0,shirt=(232,96,52),mood='smile',arms='down'):
     elif arms=='head':st+=L((cx+38*s,cy-85*s),(cx+80*s,cy-150*s),(hx+50*s,hy-40*s));st+=L((cx-38*s,cy-85*s),(cx-70*s,cy-10*s))
     else:st+=L((cx-38*s,cy-85*s),(cx-70*s,cy-10*s));st+=L((cx+38*s,cy-85*s),(cx+70*s,cy-10*s))
     st+=L((cx-18*s,cy+10*s),(cx-30*s,cy+120*s),(cx-55*s,cy+122*s));st+=L((cx+18*s,cy+10*s),(cx+30*s,cy+120*s),(cx+55*s,cy+122*s))
-    return Item(st,fill=[(body,shirt),(('circle',hx,hy,r),(255,224,190))])
+    it=Item(st,fill=[(body,shirt),(('circle',hx,hy,r),(255,224,190))]);it.person=True;return it
 def coin(cx,cy,r=45,mark='£'):
     it=Item(circ(cx,cy,r)+circ(cx,cy,r*0.72),fill=[(('circle',cx,cy,r),(250,226,140))])
     it.strokes+=text(mark,cx,cy,int(r*0.9)).strokes if r>=30 else [];return it
